@@ -91,6 +91,6 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
 
     return { 'access_token': jwt.encode(access_token, SECRET, algorithm=ALGORITHM), 'token_type': 'bearer'}
 
-@router.get('/users/me')
+@router.get('/user/me')
 async def me(user: User = Depends(current_user)):
     return user
