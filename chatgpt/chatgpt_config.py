@@ -1,1 +1,6 @@
-API_KEY = "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"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
+
+API_KEY = os.environ.get("CHATGPT_API_KEY")
