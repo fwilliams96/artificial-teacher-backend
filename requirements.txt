@@ -3,3 +3,5 @@ python-jose
 passlib
 pymongo
 python-multipart
+openai
+openai-whisper
