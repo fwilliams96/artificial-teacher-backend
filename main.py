@@ -2,10 +2,14 @@ from fastapi import FastAPI
 from routers import chat, chat_text, chat_voice
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
 
 app = FastAPI()
 
-origins = ["*"]
+origins = [os.environ.get("FRONTEND_DOMAIN")]
 
 app.add_middleware(
     CORSMiddleware,
