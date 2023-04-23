@@ -1,7 +1,9 @@
-fastapi[all]
-python-jose[cryptography]
-passlib[bcrypt]
-pymongo
-python-multipart
+fastapi
 openai
-openai-whisper
+openai_whisper
+passlib
+pydantic
+pymongo
+python-dotenv
+python-jose
+requests
