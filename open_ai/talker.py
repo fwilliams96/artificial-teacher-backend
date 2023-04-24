@@ -4,7 +4,7 @@ from db.models.chat import Message, Context
 from db.client import db_client
 from db.schemas.conversation import conversation_schema
 from bson import ObjectId
-from chatgpt_config import API_KEY
+from openai_config import API_KEY
 
 openai.api_key = API_KEY
 
