@@ -2,10 +2,11 @@ import shutil
 import time
 from fastapi import APIRouter, HTTPException, Response, UploadFile, status, File
 from db.models.chat import Context, Message
-from chatgpt.talker import start_context_chatgpt, talk_chatgpt
+from open_ai.talker import start_context_chatgpt, talk_chatgpt
 
 from elevenlabs.speaker import text_to_speech
-from whisper_tool.transcriptor import transcribe
+#from whisper_tool.transcriptor import transcribe
+from open_ai.transcriptor import transcribe
 import os
 
 router = APIRouter(prefix='/chat', tags=["chat"], responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
@@ -44,7 +45,7 @@ def chat_voice_text(context_id: str, audio: UploadFile = File(...)):
     try:
         with open(f'{audio.filename}', 'wb') as buffer:
             shutil.copyfileobj(audio.file, buffer)
-            transcription = transcribe(audio)
+            transcription = transcribe(audio.filename)
             print(transcription)
             message = Message(content=transcription)
             answer = talk_chatgpt(context_id, message)
@@ -62,7 +63,7 @@ def chat_voice_voice(context_id: str, audio: UploadFile = File(...)):
     try:
         with open(f'{audio.filename}', 'wb') as buffer:
             shutil.copyfileobj(audio.file, buffer)
-            transcription = transcribe(audio)
+            transcription = transcribe(audio.filename)
             print(transcription)
             message = Message(content=transcription)
             answer = talk_chatgpt(context_id, message)

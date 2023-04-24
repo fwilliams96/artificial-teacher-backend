@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 from db.models.chat import Message
-from chatgpt.talker import talk_chatgpt
+from open_ai.talker import talk_chatgpt
 from fastapi.responses import FileResponse
 from elevenlabs.speaker import text_to_speech
 

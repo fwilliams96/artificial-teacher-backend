@@ -1,7 +1,7 @@
 import shutil
 from fastapi import APIRouter, status, UploadFile, File
 from db.models.chat import Message
-from chatgpt.talker import talk_chatgpt
+from open_ai.talker import talk_chatgpt
 from elevenlabs.speaker import text_to_speech
 from whisper_tool.transcriptor import transcribe
 from fastapi.responses import FileResponse
