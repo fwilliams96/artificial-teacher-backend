@@ -102,17 +102,6 @@ def send_messages_chatgpt(messages: list) -> str:
         response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
         response_content = response.choices[0].message.content
         return response_content
-        '''return messages
-        if context_id != None:
-            context_id = update_conversation_and_get_context_id(message.context_id, messages)
-        else:
-            context_id = create_conversation_and_get_context_id(messages)
-        answer = {
-            "context_id": context_id,
-            "content": response_content
-        }
-        # print(messages)
-        return Message(**answer)'''
     except openai.error.RateLimitError:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Your user has exceed the quota")
 
