@@ -26,8 +26,8 @@ app.add_middleware(
 # app.include_router(jwt_auth_users.router)
 #app.include_router(chatgpt_chat.router)
 app.include_router(chat.router)
-app.include_router(chat_text.router)
-app.include_router(chat_voice.router)
+#app.include_router(chat_text.router)
+#app.include_router(chat_voice.router)
 
 #app.mount('/static', StaticFiles(directory='static'), name='static')
 

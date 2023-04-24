@@ -5,6 +5,7 @@ from chatgpt.talker import talk_chatgpt
 from elevenlabs.speaker import text_to_speech
 from whisper_tool.transcriptor import transcribe
 from fastapi.responses import FileResponse
+from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter(prefix='/chat-voice', tags=["chat-voice"], responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
 
