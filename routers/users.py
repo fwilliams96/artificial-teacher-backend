@@ -1,77 +1,40 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status
+from db.models.user import User, UserDb
+from db.client import db_client
+from db.schemas.user import user_schema
+from bson import ObjectId
+from users.auth import get_current_user
 
-router = APIRouter(prefix='/users', tags=["users"], responses={404: {"message": "Not found"}})
+from users.finder import user_exists_by_email, user_exists_by_id
+from users.password import encrypt_password
 
-# Entidad user
-class User(BaseModel):
-    id: int
-    name: str
-    surname: str
-    url: str
-    age: int
+router = APIRouter(prefix='/users', tags=["users"], responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
 
-users_list = [
-    User(id=1, name="Brais", surname="moure", url="https://moure.dev", age=35),
-    User(id=2, name="Fran", surname="fran", url="https://moure.dev", age=33)
-]
+@router.post('/', response_model=User, status_code=status.HTTP_201_CREATED)
+async def create_user(user_db: UserDb):
+    if (user_exists_by_email(user_db.email)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
 
-@router.get('/usersjson')
-async def usersjson():
-    return [
-        { "name": "Brais", "surname": "moure", "url": "https://moure.dev", "age": 35 },
-        { "name": "Fran", "surname": "fran", "url": "https://moure.dev", "age": 33 }
-    ]
+    user_dict = dict(user_db)
+    del user_dict["id"]
+    user_dict["disabled"] = False
+    user_dict["password"] = encrypt_password(user_dict["password"])
+
+    id = db_client.users.insert_one(user_dict).inserted_id
+
+    new_user = user_schema(db_client.users.find_one({"_id": id}))
+
+    return User(**new_user)
+
+@router.put('/{id}', status_code=status.HTTP_204_NO_CONTENT)
+async def update_user(id: str, user: User = Depends(get_current_user)):
+    if not user_exists_by_id(id) or id != user.id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
     
-# Query param
-@router.get('/usersquery')
-async def user(id: int):
-    return search_user(id)
+    user_dict = dict(user)
+    del user_dict["id"]
 
-@router.get('', response_model=list[User], status_code=200)
-async def users():
-    return users_list
-
-@router.get('/{id}', response_model=User, status_code=200)
-async def user(id: int):
-    return search_user(id)
-
-@router.post('/', response_model=User, status_code=201)
-async def create_user(user: User):
-    if (user_exists(user.id)):
-        raise HTTPException(status_code=400, detail="User already exists")
-    users_list.append(user)
-    return user
-
-@router.put('/{id}', status_code=204)
-async def update_user(id: int, user: User):
-    if (not user_exists(id) or id != user.id):
-            raise HTTPException(status_code=404, detail="User does not exist")
-    
-    for index, savedUser in enumerate(users_list):
-        if savedUser.id == id:
-            users_list[index] = user
-
-    return user
-
-@router.delete('/{id}', status_code=204)
-async def delete_user(id: int):
-    if (not user_exists(id)):
-        raise HTTPException(status_code=404, detail="User does not exist")
-    user = search_user(id)
-    for index, savedUser in enumerate(users_list):
-        if savedUser.id == id:
-            del users_list[index]
-
-    return user
-
-def search_user(id: int):
-    users = list(filter(lambda user: user.id == id, users_list))
     try:
-        return list(users)[0]
+        db_client.users.find_one_and_replace({"_id": ObjectId(user.id)}, user_dict)
     except:
-        return { "error": "Not found" }
-
-def user_exists(id: int):
-    users = list(filter(lambda user: user.id == id, users_list))
-    return len(users) > 0
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error updating the user")

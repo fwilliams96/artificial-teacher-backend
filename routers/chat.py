@@ -1,15 +1,16 @@
 import shutil
 import time
-from fastapi import APIRouter, HTTPException, Response, UploadFile, status, File
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, status, File
 from db.models.chat import Context, Message
 from open_ai.talker import start_context_chatgpt, talk_chatgpt
 
 from elevenlabs.speaker import text_to_speech
-#from whisper_tool.transcriptor import transcribe
 from open_ai.transcriptor import transcribe
 import os
 
-router = APIRouter(prefix='/chat', tags=["chat"], responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
+from users.auth import get_current_user
+
+router = APIRouter(prefix='/chat', tags=["chat"], responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}}, dependencies=[Depends(get_current_user)])
 
 @router.post('/', response_model=Context, status_code=status.HTTP_200_OK)
 def create_context(context: Context):
