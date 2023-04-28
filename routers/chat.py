@@ -33,15 +33,15 @@ def chat_text_voice(context_id: str, message: Message):
      try:
         answer = talk_chatgpt(context_id, message)
         audio_bytes = text_to_speech(answer.content)
-        return Response(content=audio_bytes, media_type="audio/wav")
+        return Response(content=audio_bytes, media_type="audio/mp3")
      except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating audio")
 
 @router.post('/{context_id}/voice-text', response_model=Message, status_code=status.HTTP_200_OK)
 def chat_voice_text(context_id: str, audio: UploadFile = File(...)):
-    NANOwav = time.time_ns() # generate to avoid clobber
-    audio.filename = f"user_{NANOwav}.wav"
+    NANOts = time.time_ns() # generate to avoid clobber
+    audio.filename = f"user_{NANOts}.mp3"
 
     try:
         with open(f'{audio.filename}', 'wb') as buffer:
@@ -59,8 +59,8 @@ def chat_voice_text(context_id: str, audio: UploadFile = File(...)):
 
 @router.post('/{context_id}/voice-voice', response_class=Response, status_code=status.HTTP_200_OK)
 def chat_voice_voice(context_id: str, audio: UploadFile = File(...)):
-    NANOwav = time.time_ns() # generate to avoid clobber
-    audio.filename = f"user_{NANOwav}.wav"
+    NANOts = time.time_ns() # generate to avoid clobber
+    audio.filename = f"user_{NANOts}.mp3"
     try:
         with open(f'{audio.filename}', 'wb') as buffer:
             shutil.copyfileobj(audio.file, buffer)
@@ -69,7 +69,7 @@ def chat_voice_voice(context_id: str, audio: UploadFile = File(...)):
             message = Message(content=transcription)
             answer = talk_chatgpt(context_id, message)
             audio_answer_bytes = text_to_speech(answer.content)
-            return Response(content=audio_answer_bytes, media_type="audio/wav")
+            return Response(content=audio_answer_bytes, media_type="audio/mp3")
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating/loading audio")
