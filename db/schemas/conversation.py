@@ -9,6 +9,9 @@ def messages_chema(messages) -> list:
 
 def message_chema(message) -> dict:
     return {
-        "role": str(message["role"]),
-        "content": message["content"]
+        "type": message["type"],
+        "message": {
+            "role": str(message["message"]["role"]),
+            "content": message["message"]["content"]
+        }
     }
