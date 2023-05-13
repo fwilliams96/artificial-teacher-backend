@@ -1,5 +1,6 @@
-from typing import Optional
-from pydantic import BaseModel
+from typing import Any, Optional, Union
+from pydantic import BaseModel, Field
+from enum import Enum
 
 # Entidad chatgpt question
 class ChatGPTQuestion(BaseModel):
@@ -12,12 +13,52 @@ class ChatGPTAnswer(BaseModel):
     content: str
     transcription: Optional[str]
 
-# Entidad chatgpt answer
-class Message(BaseModel):
+class ActivityType(str, Enum):
+    FLASHCARD = 'flashcard'
+
+class FlashCard(BaseModel):
+    sentence: str
+    correct_sentence: str
+    options: list[str]
+
+class Activity(BaseModel):
+    activity_type: ActivityType
+    comments: Optional[str]
+
+class AgentFlashCardActivity(Activity):
+    incorrect: str
+    correct: str
+    flashcard: FlashCard
+    activity_type = ActivityType.FLASHCARD
+
+class MessageContentType(str, Enum):
+    TEXT = 'text'
+    AUDIO = 'audio'
+
+class MessageType(str, Enum):
+    ACTIVITY = 'activity',
+    ANALYSIS = 'analysis',
+    CONVERSATION = 'conversation'
+
+class UserMessage(BaseModel):
+    content_type: MessageContentType
     content: str
-    transcription: Optional[str]
+    message_type: MessageType | None
+
+# Entidad chatgpt answer
+class ServerMessage(BaseModel):
+    content_type: MessageContentType
+    content: str | AgentFlashCardActivity
+    message_type: MessageType
+    transcription: Optional[str] = None
 
 # Entidad context
-class Context(BaseModel):
+class ServerContext(BaseModel):
     context_id: Optional[str]
     content: str
+
+class AgentAnalysis(BaseModel):
+    comments: Optional[str]
+    grammatical_errors: list[str] = []
+    spelling_errors: list[str] = []
+    pronunciation_errors: list[str] = []
