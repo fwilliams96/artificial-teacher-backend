@@ -1,0 +1,175 @@
+########### CONFIGURAR PYTHON (UBUNTU) ##############
+- sudo apt update
+- sudo apt install python3-pip -> Instalar pip3
+- sudo apt install python3-dev
+- sudo apt install python3-setuptools
+- sudo apt install python3-venv
+
+########### CONFIGURAR VIRTUAL ENV (UBUNTU) #############
+- python3 -m venv env -> Crear entorno
+- source env/bin/activate -> Activar entorno
+
+########### CONFIGURAR VIRTUAL ENV (WINDOWS) #############
+- python -m venv v
+- .\env\Scripts\Activate.ps1
+
+########### CONFIGURAR MONGODB #################
+- docker pull mongo
+- docker run -d -p 27017:27017 -v D:\Projects\Consultoria\mongo-docker-example:/data/db --name mongodb mongo
+- docker rm -f <ps_id>
+
+########## CONFIGURAR FASTAPI ################
+
+- pip install "fastapi[all]" -> Incluye uvicorn
+- uvicorn main:app --reload
+
+######### CONFIGURAR CRIPTOGRAFIA (auth) ###########
+
+- pip install "python-jose[cryptography]"
+- pip install "passlib[bcrypt]"
+
+######### CONFIGURAR MONGODB ###########
+
+- pip install pymongo
+
+######### CONFIGURAR CHATGPT ###########
+
+- pip install openai
+
+######### CONFIGURAR WHISPER (NO SE USA) ###########
+- sudo apt update && sudo apt install ffmpeg
+- pip install -U openai-whisper (o pip install git+https://github.com/openai/whisper.git)
+- pip install -U openai-whisper --no-cache-dir -> Evita cargar en RAM (para instalar en VM)
+
+######### CONECTAR CON MAQUINA REMOTA ###########
+- ssh root@46.101.139.146
+
+######### COPIAR PROYECTO EN MAQUINA REMOTA ###########
+- scp -r fastapi-backend root@46.101.139.146:/root/project -> Lo pega en la carpeta project
+
+######### CONFIGURAR NGINX ###########
+- sudo apt install nginx
+
+2 opciones:
+
+	1)
+		- sudo nano /etc/nginx/sites-available/fastapi-backend -> Crear archivo config nginx para proyecto fastapi_backend
+			server{
+				server_name 46.101.139.146; # IP drople
+					location / {
+					   include proxy_params;
+					   proxy_pass http://127.0.0.1:8000;
+					}
+			}
+
+		- sudo ln -s /etc/nginx/sites-available/fastapi-backend /etc/nginx/sites-enabled/fastapi-backend -> Crear enlace simbolico
+	2)
+		- sudo nano /etc/nginx/sites-enabled/fastapi-backend
+		server{
+				listen 80;
+				server_name 54.152.126.82;
+				location / {
+						proxy_pass http://127.0.0.1:8000;
+				}
+		}
+		
+	3) (usada actualmente) 
+		- sudo nano /etc/nginx/sites-available/artificial-teacher-backend -> Crear archivo config nginx para proyecto fastapi_backend
+		- Añadir siguiente config:
+		server{
+			server_name artificial-teacher.pro www.artificial-teacher.pro;
+			location / {
+				include proxy_params;
+				proxy_pass http://127.0.0.1:8000;
+			}
+       }
+	   - sudo ln -s /etc/nginx/sites-available/artificial-teacher-backend /etc/nginx/sites-enabled/artificial-teacher-backend -> Crear enlace simbolico
+	   
+- sudo systemctl restart nginx.service (sudo service nginx restart) -> Reiniciar nginx
+
+######### CONFIGURAR SERVIDOR GUNICORN ###########
+
+- pip install gunicorn
+- gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+
+
+######### CONFIGURAR SERVIDOR SISTEMA (UBUNTU) ###########
+
+- sudo nano /etc/systemd/system/artificial-teacher-backend-uvicorn.service -> Crear servicio sistema para mantenerlo arrancado
+
+1 )
+	[Unit]
+	Description=FastApi Backend
+
+	[Service]
+	WorkingDirectory=/root/project/fastapi-backend
+	Environment="PATH=/root/project/env/bin"
+	ExecStart=/root/project/env/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+
+2) (usado actualmente)
+
+	[Unit]
+	Description=Artificial Teacher Backend
+
+	[Service]
+	WorkingDirectory=/root/project/artificial-teacher-backend
+	Environment="PATH=/root/project/env/bin"
+	ExecStart=/root/project/env/bin/uvicorn main:app --reload
+
+	[Install]
+	WantedBy=multi-user.target
+
+- sudo systemctl start artificial-teacher-backend-uvicorn -> Arrancar servicio creado
+- sudo systemctl status artificial-teacher-backend-uvicorn -> Ver status
+- sudo systemctl disable artificial-teacher-backend-uvicorn -> Deshabilitar servicio
+
+
+######### CONFIGURAR FIREWALL (UBUNTU) ###########
+
+- Links:
+	- https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu-22-04
+	- https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-20-04
+
+- Proceso
+
+	- sudo ufw default deny incoming -> Negar todas las peticiones entrantes (mas seguro)
+	- sudo ufw default allow outgoing -> Permitir todas peticiones salientes
+
+	Añadir protocolos tcp:
+
+		1) Usando app profiles -> sudo ufw app list
+			- sudo ufw allow 'OpenSSH' -> Necesaria para mantener conexion ssh remota
+			- sudo ufw allow 'Nginx HTTP' -> Necesaria para recibir peticiones http (para eliminar sudo ufw delete allow 'Nginx HTTP')
+			- sudo ufw allow 'Nginx HTTPS' -> Necesaria para recibir peticiones https
+			- sudo ufw allow 'Nginx Full' -> Necesaria para recibir peticiones http/https
+			
+		2) Usando protocolos directamente
+			- sudo ufw allow ssh
+			- sudo ufw allow http
+			- sudo ufw allow https (para eliminar sudo ufw delete allow https)
+
+
+######### CONFIGURAR DNS DOMINIO CUSTOM (NAMECHEAP/DIGITAL OCEAN) ###########
+
+- Links:
+	- https://www.namecheap.com/support/knowledgebase/article.aspx/10375/2208/how-do-i-link-a-domain-to-my-digitalocean-account/
+	- https://docs.digitalocean.com/products/networking/dns/how-to/add-domains/
+
+######### CONFIGURAR SSL (NAMECHEAP/DIGITAL OCEAN) -> Una vez la redireccion de dominio funcione ###########
+- Links:
+	- https://www.digitalocean.com/community/tutorials/how-to-install-an-ssl-certificate-from-a-commercial-certificate-authority
+	- https://www.namecheap.com/support/knowledgebase/article.aspx/794/67/how-do-i-activate-an-ssl-certificate/
+	- https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
+
+
+######### CONFIGURAR SSL (LET'S ENCRIPT/DIGITAL OCEAN) -> Una vez la redireccion de dominio funcione ###########
+
+- sudo apt install certbot python3-certbot-nginx
+- sudo certbot --nginx -d artificial-teacher.pro -d www.artificial-teacher.pro (pedirá email para renovar certificado y aceptar)
+
+#####################################################################
+
+fwmcomputer
+pAZo34M1oopMdknf
+
+mongodb+srv://fwmcomputer:pAZo34M1oopMdknf@cluster0.dabizfp.mongodb.net/?retryWrites=true&w=majority

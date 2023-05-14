@@ -1,8 +1,7 @@
 import base64
-import shutil
 import time
 from fastapi import APIRouter, Depends, HTTPException, status
-from db.models.chat import ActivityType, AgentFlashCardActivity, MessageContentType, MessageType, ServerContext, ServerMessage, UserMessage
+from db.models.chat import Activity, ActivityType, AgentAnalysis, AgentFlashCardActivity, MessageContentType, MessageType, ServerContext, ServerMessage, UserMessage
 from open_ai.activity_planner import recover_activity_messages_db
 from open_ai.analyst import analyze_message
 from open_ai.flashcard_activity_planner import create_flashcard_activity
@@ -39,77 +38,11 @@ def chat(context_id: str, response_type: MessageContentType, user_message: UserM
         return chat_audio_text(context_id, user_message)
 
 def chat_text_text(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
-    agent_analysis = analyze_message(context_id, user_message.content)
-    if (len(agent_analysis.grammatical_errors) > 0) or \
-        (len(agent_analysis.spelling_errors) > 0) or \
-        (len(agent_analysis.pronunciation_errors) > 0):
-        activity_type = ActivityType.FLASHCARD # TODO choose random activity
-        if activity_type == ActivityType.FLASHCARD:
-            flashcard_activity = create_flashcard_activity(context_id, agent_analysis)
-            server_messages = []
-            if len(agent_analysis.grammatical_errors) > 0 or \
-                len(agent_analysis.spelling_errors) > 0 or \
-                    len(agent_analysis.pronunciation_errors) > 0:
-                if len(agent_analysis.grammatical_errors) > 0:
-                    server_messages.append(
-                        ServerMessage(
-                            content_type=MessageContentType.TEXT,
-                            message_type=MessageType.CONVERSATION, 
-                            content=f"Oops, there's a gramatical error in the sentence {flashcard_activity.incorrect}.\n "\
-                            "Here you have a flashcard to practice."
-                        )
-                    )
-                elif len(agent_analysis.spelling_errors) > 0:
-                    server_messages.append(
-                        ServerMessage(
-                            content_type=MessageContentType.TEXT,
-                            message_type=MessageType.CONVERSATION, 
-                            content=f"Oops, there's a spelling error in the sentence {flashcard_activity.incorrect}.\n "\
-                            "Here you have a flashcard to practice."
-                        )
-                    )
-                elif len(agent_analysis.pronunciation_errors) > 0:
-                    server_messages.append(
-                        ServerMessage(
-                            content_type=MessageContentType.TEXT,
-                            message_type=MessageType.CONVERSATION, 
-                            content=f"Oops, there's a pronunciation error in the sentence {flashcard_activity.incorrect}.\n "\
-                            "Here you have a flashcard to practice."
-                        )
-                    )
-
-            server_messages.append(
-                ServerMessage(
-                    content_type=MessageContentType.TEXT,
-                    message_type=MessageType.ACTIVITY, 
-                    content=flashcard_activity
-                )
-            )
-            return server_messages
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Activity {activity_type.value} is not available yet.")
-
-    else:
-        return [
-                ServerMessage(
-                    content_type=MessageContentType.TEXT,
-                    message_type=MessageType.CONVERSATION,
-                    content=talker_response(context_id, user_message.content)
-                )
-            ]
+    return analyze_message_and_generate_response(context_id, user_message.content, MessageContentType.TEXT)
 
 def chat_text_audio(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
      try:
-        answer = talker_response(context_id, user_message.content)
-        audio_bytes = text_to_speech(answer)
-        audio_data_base64 = bytes_to_base64(audio_bytes)
-        return [
-            ServerMessage(
-                content_type=MessageContentType.AUDIO,
-                message_type=MessageType.CONVERSATION, 
-                content=audio_data_base64
-            )
-        ]
-        #return Response(content=audio_bytes, media_type="audio/mp3")
+        return analyze_message_and_generate_response(context_id, user_message.content, MessageContentType.AUDIO)
      except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating audio")
@@ -124,22 +57,14 @@ def chat_audio_text(context_id: str, user_message: UserMessage) -> list[ServerMe
             buffer.write(audio_bytes)
             transcription = transcribe(audio_filename)
             print(transcription)
-            answer = talker_response(context_id, transcription)
-            return [
-                ServerMessage(
-                    content_type=MessageContentType.TEXT,
-                    message_type=MessageType.CONVERSATION, 
-                    content=answer, 
-                    transcription=transcription
-                )
-            ]
+            return analyze_message_and_generate_response(context_id, transcription, MessageContentType.TEXT)
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error loading audio")
     finally:
         delete_file(audio_filename)
 
-def chat_audio_audio(context_id: str, user_message: UserMessage):
+def chat_audio_audio(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
     NANOts = time.time_ns() # generate to avoid clobber
     audio_filename = f"user_{NANOts}.mp3"
     audio_bytes = base64_to_bytes(user_message.content)
@@ -149,22 +74,63 @@ def chat_audio_audio(context_id: str, user_message: UserMessage):
             buffer.write(audio_bytes)
             transcription = transcribe(audio_filename)
             print(transcription)
-            answer = talker_response(context_id, transcription)
-            audio_bytes = text_to_speech(answer)
-            audio_data_base64 = bytes_to_base64(audio_bytes)
-            return [
-                ServerMessage(
-                    content_type=MessageContentType.AUDIO,
-                    message_type=MessageType.CONVERSATION, 
-                    content=audio_data_base64
-                )
-            ]
+            return analyze_message_and_generate_response(context_id, transcription, MessageContentType.AUDIO)
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating/loading audio")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error loading audio")
     finally:
         delete_file(audio_filename)
 
+def analyze_message_and_generate_response(context_id: str, user_message: str, response_type: MessageContentType) -> list[ServerMessage]:
+    agent_analysis = analyze_message(context_id, user_message)
+    if exist_analysis_errors(agent_analysis):
+
+        if exist_grammatical_error(agent_analysis) or exist_spelling_error(agent_analysis):
+            activity_type = generate_random_activity()
+            if activity_type == ActivityType.FLASHCARD:
+                flashcard_activity = create_flashcard_activity(context_id, agent_analysis)
+                server_messages = []
+                activity_introduction_message = get_activity_introduction_message(agent_analysis, flashcard_activity)
+
+                server_messages.append(
+                    generate_conversation_message_based_on_response_type(activity_introduction_message, response_type)
+                )
+
+                server_messages.append(
+                    ServerMessage(
+                        content_type=MessageContentType.TEXT,
+                        message_type=MessageType.ACTIVITY, 
+                        content=flashcard_activity
+                    )
+                )
+                return server_messages
+        
+        #elif exist_pronunciation_error(agent_analysis):
+
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Activity {activity_type.value} is not available yet.")
+
+    else:
+        return [generate_conversation_message_based_on_response_type(talker_response(context_id, user_message), response_type)]
+
+def generate_conversation_message_based_on_response_type(server_message: str, response_type: MessageContentType) -> ServerMessage:
+    if response_type == MessageContentType.TEXT:
+        return ServerMessage(
+                    content_type=MessageContentType.TEXT,
+                    message_type=MessageType.CONVERSATION, 
+                    content=server_message
+                )
+    try:
+        audio_bytes = text_to_speech(server_message)
+        audio_data_base64 = bytes_to_base64(audio_bytes)
+        return ServerMessage(
+                        content_type=MessageContentType.AUDIO,
+                        message_type=MessageType.CONVERSATION, 
+                        content=audio_data_base64
+                    )
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating audio")
+    
 def talker_response(context_id: str, user_message: str) -> str:
     try:
         return answer_message(context_id, user_message)
@@ -199,6 +165,40 @@ def bytes_to_base64(audio_bytes):
 def delete_file(filename: str):
      if os.path.isfile(filename):
         os.remove(filename)
+
+def exist_analysis_errors(agent_analysis: AgentAnalysis):
+    return (len(agent_analysis.grammatical_errors) > 0) or \
+        (len(agent_analysis.spelling_errors) > 0) or \
+        (len(agent_analysis.pronunciation_errors) > 0)
+
+def exist_grammatical_error(agent_analysis: AgentAnalysis):
+    return len(agent_analysis.grammatical_errors) > 0
+
+def exist_spelling_error(agent_analysis: AgentAnalysis):
+    return len(agent_analysis.spelling_errors) > 0
+
+def exist_pronunciation_error(agent_analysis: AgentAnalysis):
+    return len(agent_analysis.pronunciation_errors) > 0
+
+def generate_random_activity():
+    activity_type = ActivityType.FLASHCARD # TODO choose random activity
+    return activity_type
+
+def get_activity_introduction_message(agent_analysis: AgentAnalysis, activity: Activity):
+    activity_intro_message = ""
+    if len(agent_analysis.grammatical_errors) > 0:
+        activity_intro_message = f"Oops, there's a gramatical error in the sentence {activity.incorrect}.\n "\
+                f"Here you have a {activity.activity_type} to practice."
+
+    elif len(agent_analysis.spelling_errors) > 0:
+        activity_intro_message = f"Oops, there's a spelling error in the sentence {activity.incorrect}.\n "\
+                f"Here you have a {activity.activity_type} to practice."
+        
+    elif len(agent_analysis.pronunciation_errors) > 0:
+        activity_intro_message=f"Oops, there's a pronunciation error in the sentence {activity.incorrect}.\n "\
+                f"Here you have a {activity.activity_type} to practice."
+        
+    return activity_intro_message
 
 @router.post('/{context_id}/activity', response_model=list[ServerMessage], status_code=status.HTTP_200_OK)
 def answer_activity(context_id: str, message: UserMessage, activity_type: ActivityType | None = None):
