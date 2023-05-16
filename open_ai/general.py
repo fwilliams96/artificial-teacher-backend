@@ -61,7 +61,7 @@ def build_agent_message(message: dict):
         'content': json_to_string(message['message']['content'])
     }
 
-def fix_json_quotes(json_string):
+def fix_json_quotes(json_string) -> str:
     try:
         obj = ast.literal_eval(json_string)
         return json.dumps(obj)
