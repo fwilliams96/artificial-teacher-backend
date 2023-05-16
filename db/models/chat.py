@@ -22,12 +22,12 @@ class FlashCard(BaseModel):
     options: list[str]
 
 class Activity(BaseModel):
+    incorrect: str
+    correct: str
     activity_type: ActivityType
     comments: Optional[str]
 
 class AgentFlashCardActivity(Activity):
-    incorrect: str
-    correct: str
     flashcard: FlashCard
     activity_type = ActivityType.FLASHCARD
 
