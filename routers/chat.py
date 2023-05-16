@@ -49,7 +49,7 @@ def chat_text_audio(context_id: str, user_message: UserMessage) -> list[ServerMe
     
 def chat_audio_text(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
     NANOts = time.time_ns() # generate to avoid clobber
-    audio_filename = f"user_{NANOts}.mp3"
+    audio_filename = f"user_{NANOts}.wav"
     audio_bytes = base64_to_bytes(user_message.content)
     try:
         with open(f'{audio_filename}', 'wb') as buffer:
@@ -66,7 +66,7 @@ def chat_audio_text(context_id: str, user_message: UserMessage) -> list[ServerMe
 
 def chat_audio_audio(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
     NANOts = time.time_ns() # generate to avoid clobber
-    audio_filename = f"user_{NANOts}.mp3"
+    audio_filename = f"user_{NANOts}.wav"
     audio_bytes = base64_to_bytes(user_message.content)
     try:
         with open(f'{audio_filename}', 'wb') as buffer:
