@@ -19,6 +19,7 @@ class ActivityType(str, Enum):
 class FlashCard(BaseModel):
     sentence: str
     correct_sentence: str
+    correct_option: str
     options: list[str]
 
 class Activity(BaseModel):
@@ -26,6 +27,7 @@ class Activity(BaseModel):
     correct: str
     activity_type: ActivityType
     comments: Optional[str]
+    active = True
 
 class AgentFlashCardActivity(Activity):
     flashcard: FlashCard
