@@ -8,8 +8,9 @@ json_format = {
     "incorrect": "incorrect word or phrase", 
     "correct": "correct word or phrase", 
     "flashcard": {
-        "sentence": "sentence with a blank space", 
+        "sentence": "sentence with a blank space",
         "correct_sentence": "complete sentence with the correct word or phrase", 
+        "correct_option": "correct option",
         "options": [
             "correct option", 
             "incorrect option 1", 
