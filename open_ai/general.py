@@ -14,35 +14,39 @@ rewrite_context = "You are a JSON validator and your job is to return the JSON "
 "I will give in a proper format, using doble quotes for the fields and single quotes "\
 "for the content of them."
 
-def get_agent_response(messages: list[dict]) -> str:
+def get_agent_response(messages: list[dict], max_tokens = 4096) -> str:
     try:
-        response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
+        response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages, max_tokens=max_tokens)
         response_content = response.choices[0].message.content
         return response_content
     except openai.error.RateLimitError:
+        print(f"Your user has exceed the quota")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Your user has exceed the quota")
+    except Exception as e:
+        print(f"Exception calling chatgpt: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Exception calling chatgpt")
 
 def check_conversation_exists(context_id: str):
     conversation_db = db_client.conversations.find_one({"_id": ObjectId(context_id)})
     if not conversation_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Context not found")
 
-def recover_all_messages(context_id: str) -> list:
+def recover_free_chat_messages(context_id: str) -> list:
     conversation_db = db_client.conversations.find_one({"_id": ObjectId(context_id)})
     if not conversation_db:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Context not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Free chat not found")
     conversation = conversation_schema(conversation_db)
     return conversation['messages']
 
 def check_is_valid_json_and_get_correct_json(json_string):
     contains_json = check_contains_json(json_string)
-    print(f"\n[VALIDATING] - String contains a json?: {contains_json} \n")
+    print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - String contains a json?: {contains_json} <<<<<<<<<<<<<<<<<<<\n")
     if not contains_json:
         return False, json_string
     json_string = extract_existing_json(json_string)
-    print(f"\n[VALIDATING] - After extracting json: {json_string} \n")
+    print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After extracting json: {json_string} <<<<<<<<<<<<<<<<<<<\n")
     json_string = fix_json_quotes(json_string)
-    print(f"\n[VALIDATING] - After fixing json quotes: {json_string} \n")
+    print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After fixing json quotes: {json_string} <<<<<<<<<<<<<<<<<<<\n")
     try:
         json.loads(json_string)
         return True, json_string
@@ -66,12 +70,8 @@ def fix_json_quotes(json_string) -> str:
         obj = ast.literal_eval(json_string)
         return json.dumps(obj)
     except SyntaxError as e:
-        print(e)
         print("Literal eval failed, trying to rewrite JSON..")
         return rewrite_json(json_string)
-    '''json_string = re.sub(r"'(\s*[\{,]\s*)'([^']+)'(\s*:\s*)'", r'\1"\2"\3', json_string)
-    json_string = re.sub(r"(\s*:\s*)'([^']+)'(\s*[\},]\s*)", r'\1"\2"\3', json_string)
-    return json_string'''
 
 def check_contains_json(json_string: str):
     exists_json = False

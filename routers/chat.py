@@ -2,7 +2,7 @@ import base64
 import time
 from fastapi import APIRouter, Depends, HTTPException, status
 from db.models.chat import Activity, ActivityType, AgentAnalysis, AgentFlashCardActivity, MessageContentType, MessageType, ServerContext, ServerMessage, UserMessage
-from open_ai.activity_planner import recover_activity_messages_db
+from open_ai.activity_planner import recover_last_activity_message_db
 from open_ai.analyst import analyze_message
 from open_ai.flashcard_activity_planner import create_flashcard_activity
 from open_ai.general import check_conversation_exists
@@ -25,32 +25,61 @@ def create_context(user_message: UserMessage):
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating context")
 
-
 @router.post('/{context_id}', response_model=list[ServerMessage], status_code=status.HTTP_200_OK)
 def chat(context_id: str, response_type: MessageContentType, user_message: UserMessage):
+    if user_message.message_type == MessageType.ACTIVITY:
+        return answer_activity(context_id, response_type, user_message)
+    else:
+        return answer_conversation(context_id, response_type, user_message)
+
+def answer_activity(context_id: str, response_type: MessageContentType, user_message: UserMessage) -> list[ServerMessage]:
+    answer_correct, correct_sentence = answer_is_correct(context_id, user_message)
+    if answer_correct:
+        # TODO maybe we should not use the correct_sentence to continue the conversation and tell gpt to continue with another topic
+        return answer_conversation(context_id, response_type, UserMessage(content=correct_sentence, content_type=MessageContentType.TEXT))
+    else:
+        server_messages = []
+        server_messages.append(
+            ServerMessage(
+                content_type=MessageContentType.TEXT,
+                message_type=MessageType.CONVERSATION, 
+                content=f"Oops.. that's not the right answer. The correct sentence would be: <{correct_sentence}> .\n"
+            )
+        )
+        server_messages.append(
+            ServerMessage(
+                content_type=MessageContentType.TEXT,
+                message_type=MessageType.CONVERSATION, 
+                content=f"All right, let's continue!\n"
+            )
+        )
+        server_messages.extend(answer_conversation(context_id, response_type, user_message))
+        return server_messages
+    
+def answer_conversation(context_id: str, response_type: MessageContentType, user_message: UserMessage) -> list[ServerMessage]:
     if user_message.content_type == MessageContentType.TEXT:
         if response_type == MessageContentType.AUDIO:
-            return chat_text_audio(context_id, user_message)
-        return chat_text_text(context_id, user_message)
+            return chat_text_audio(context_id, user_message.content)
+        return chat_text_text(context_id, user_message.content)
     elif user_message.content_type == MessageContentType.AUDIO:
         if response_type == MessageContentType.AUDIO:
-            return chat_audio_audio(context_id, user_message)
-        return chat_audio_text(context_id, user_message)
+            return chat_audio_audio(context_id, user_message.content)
+        return chat_audio_text(context_id, user_message.content)
+    
+def chat_text_text(context_id: str, user_message: str) -> list[ServerMessage]:
+    return analyze_message_and_generate_response(context_id, user_message, MessageContentType.TEXT)
 
-def chat_text_text(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
-    return analyze_message_and_generate_response(context_id, user_message.content, MessageContentType.TEXT)
-
-def chat_text_audio(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
+def chat_text_audio(context_id: str, user_message: str) -> list[ServerMessage]:
      try:
-        return analyze_message_and_generate_response(context_id, user_message.content, MessageContentType.AUDIO)
+        return analyze_message_and_generate_response(context_id, user_message, MessageContentType.AUDIO)
      except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating audio")
     
-def chat_audio_text(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
+def chat_audio_text(context_id: str, user_message: str) -> list[ServerMessage]:
     NANOts = time.time_ns() # generate to avoid clobber
     audio_filename = f"user_{NANOts}.wav"
-    audio_bytes = base64_to_bytes(user_message.content)
+    audio_bytes = base64_to_bytes(user_message)
     try:
         with open(f'{audio_filename}', 'wb') as buffer:
             #shutil.copyfileobj(audio_bytes, buffer)
@@ -64,10 +93,10 @@ def chat_audio_text(context_id: str, user_message: UserMessage) -> list[ServerMe
     finally:
         delete_file(audio_filename)
 
-def chat_audio_audio(context_id: str, user_message: UserMessage) -> list[ServerMessage]:
+def chat_audio_audio(context_id: str, user_message: str) -> list[ServerMessage]:
     NANOts = time.time_ns() # generate to avoid clobber
     audio_filename = f"user_{NANOts}.wav"
-    audio_bytes = base64_to_bytes(user_message.content)
+    audio_bytes = base64_to_bytes(user_message)
     try:
         with open(f'{audio_filename}', 'wb') as buffer:
             #shutil.copyfileobj(audio_bytes, buffer)
@@ -138,17 +167,19 @@ def talker_response(context_id: str, user_message: str) -> str:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating response")
         
-def answer_is_correct(context_id: str, activity_type: ActivityType, user_message: str) -> bool:
+def answer_is_correct(context_id: str, user_message: str) -> bool:
     check_conversation_exists(context_id)
-    activity_messages_db = recover_activity_messages_db(context_id, activity_type)
-    if len(activity_messages_db) == 0:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"There is no {activity_type.value} activity.")
-    
+    last_activity_message_db = recover_last_activity_message_db(context_id)
+    if last_activity_message_db is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"There is no a current activity.")
     # Switch between different activities (better to have some dictionary or whatever to avoid conditions)
+    activity_type = last_activity_message_db['message']['activity_type']
     if activity_type == ActivityType.FLASHCARD:
-        last_activity_db = activity_messages_db[-1]
-        flashcard_activity = AgentFlashCardActivity(**last_activity_db['message']['content'])
-        return user_message == flashcard_activity.flascard.correct_sentence, flashcard_activity.flascard.correct_sentence
+        flashcard_activity = AgentFlashCardActivity(**last_activity_message_db['message']['content'])
+        print(f"User option: {user_message}")
+        print(f"Correct option: {flashcard_activity.flashcard.correct_option}")
+        print(f"Match?: {user_message == flashcard_activity.flashcard.correct_option}")
+        return user_message == flashcard_activity.flashcard.correct_option, flashcard_activity.flashcard.correct_sentence
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Activity {activity_type.value} is not available yet.")
 
 def base64_to_bytes(base64Text: str):
@@ -199,39 +230,3 @@ def get_activity_introduction_message(agent_analysis: AgentAnalysis, activity: A
                 f"Here you have a {activity.activity_type} to practice."
         
     return activity_intro_message
-
-@router.post('/{context_id}/activity', response_model=list[ServerMessage], status_code=status.HTTP_200_OK)
-def answer_activity(context_id: str, message: UserMessage, activity_type: ActivityType | None = None):
-    answer_correct, correct_sentence = answer_is_correct(context_id, activity_type, message.content)
-    if answer_correct:
-        return [
-            ServerMessage(
-                content_type=MessageContentType.TEXT,
-                message_type=MessageType.CONVERSATION, 
-                content=talker_response(context_id, message.content)
-            )
-        ]
-    else:
-        server_messages = []
-        server_messages.append(
-            ServerMessage(
-                content_type=MessageContentType.TEXT,
-                message_type=MessageType.CONVERSATION, 
-                content=f"Oops.. that's not the right answer. The correct sentence would be: {correct_sentence}.\n"
-            )
-        )
-        server_messages.append(
-            ServerMessage(
-                content_type=MessageContentType.TEXT,
-                message_type=MessageType.CONVERSATION, 
-                content=f"All right, let's continue!\n"
-            )
-        )
-        server_messages.append(
-            ServerMessage(
-                content_type=MessageContentType.TEXT,
-                message_type=MessageType.CONVERSATION, 
-                content=talker_response(context_id, correct_sentence)
-            )
-        )
-        return server_messages
