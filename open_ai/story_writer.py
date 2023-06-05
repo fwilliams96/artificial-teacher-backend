@@ -5,23 +5,22 @@ from db.models.chat import MessageType
 
 from open_ai.general import check_conversation_exists, recover_free_chat_messages, get_agent_response
 
-talker_context = "You are an English expert and your job is to keep a conversation with a user in a basic level, "\
-"I will be your man in the middle. Keep the conversation active, focusing on learning English."
+story_writer_context = "You are a story writer and your job is to make up short crime/suspense stories."
 
-def start_conversation(user_message: str) -> Tuple[str, str]:
-    messages=[{"role": "system", "content": talker_context}] 
-    messages.append({"role": "user", "content": user_message})
-    agent_response = get_agent_response(messages, 200)
+def start_story() -> Tuple[str, str]:
+    messages=[{"role": "system", "content": story_writer_context}] 
+    messages.append({"role": "user", "content": "Write a short story of 500 characters"})
+    agent_response = get_agent_response(messages, 1000)
     messages.append({"role": "assistant", "content": agent_response})
-    context_id = create_conversation_and_get_context_id(messages)
+    context_id = create_story_and_get_context_id(messages)
     return context_id, agent_response
 
-def create_conversation_and_get_context_id(conversation_messages: list[dict]) -> str:
+def create_story_and_get_context_id(conversation_messages: list[dict]) -> str:
     conversation_messages_db = [build_db_conversation_message(conversation_message) for conversation_message in conversation_messages]
     conversation = {
         "messages": conversation_messages_db
     }
-    return str(db_client.conversations.insert_one(conversation).inserted_id)
+    return str(db_client.stories.insert_one(conversation).inserted_id)
 
 def build_db_conversation_message(message: dict):
     return {
@@ -38,7 +37,7 @@ def answer_message(context_id: str, user_message: str) -> str:
     new_messages = []
     new_messages.append({"role": "user", "content": user_message})
     messages.extend(new_messages)
-    agent_response = get_agent_response(messages, 200)
+    agent_response = get_agent_response(messages)
     new_messages.append({"role": "assistant", "content": agent_response})
     context_id = update_conversation(context_id, new_messages)
     return agent_response

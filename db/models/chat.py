@@ -40,7 +40,8 @@ class MessageContentType(str, Enum):
 class MessageType(str, Enum):
     ACTIVITY = 'activity',
     ANALYSIS = 'analysis',
-    CONVERSATION = 'conversation'
+    CONVERSATION = 'conversation',
+    LISTENING = 'listening'
 
 class UserMessage(BaseModel):
     content_type: MessageContentType
