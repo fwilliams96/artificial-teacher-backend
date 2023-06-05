@@ -2,10 +2,17 @@ from db.models.chat import ActivityType, MessageType
 from db.client import db_client
 from bson import ObjectId
 
-from open_ai.general import build_agent_message, recover_all_messages
+from open_ai.general import build_agent_message, recover_free_chat_messages
+
+def recover_last_activity_message_db(context_id: str):
+    messages_db = recover_free_chat_messages(context_id)
+    activity_messages_db = list(filter(lambda message_db: message_db['type'] == MessageType.ACTIVITY.value, messages_db))
+    if len(activity_messages_db) == 0:
+        return None
+    return activity_messages_db[-1]
 
 def recover_activity_messages_db(context_id: str, activity_type: ActivityType):
-    messages_db = recover_all_messages(context_id)
+    messages_db = recover_free_chat_messages(context_id)
     activity_messages_db = list(filter(lambda message_db: message_db['type'] == MessageType.ACTIVITY.value, messages_db))
     return list(filter(lambda activity_message_db: activity_message_db['message']['activity_type'] == activity_type.value, activity_messages_db))
 

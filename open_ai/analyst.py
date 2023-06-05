@@ -3,7 +3,7 @@ from db.client import db_client
 from bson import ObjectId
 from db.models.chat import AgentAnalysis, MessageType
 
-from open_ai.general import build_agent_message, check_conversation_exists, check_is_valid_json_and_get_correct_json, recover_all_messages, get_agent_response, string_to_json
+from open_ai.general import build_agent_message, check_conversation_exists, check_is_valid_json_and_get_correct_json, recover_free_chat_messages, get_agent_response, string_to_json
 
 json_format = {
     "grammatical_errors": ["list of grammatical errors"], 
@@ -58,7 +58,7 @@ def analyze_message(context_id: str, user_message: str) -> AgentAnalysis:
     return AgentAnalysis(**agent_response_json)
 
 def recover_analysis_messages_db(context_id: str):
-    messages_db = recover_all_messages(context_id)
+    messages_db = recover_free_chat_messages(context_id)
     return list(filter(lambda message_db: message_db['type'] == MessageType.ANALYSIS.value, messages_db))
 
 def recover_analysis_messages(context_id: str):
