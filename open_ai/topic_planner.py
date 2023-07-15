@@ -1,6 +1,9 @@
 
+import random
 from fastapi import HTTPException, status
+from db.models.user import User
 from open_ai.general import check_is_valid_json_and_get_correct_json, get_agent_response, json_to_string, string_to_json
+from open_ai.preference import get_user_preferences
 
 json_format = {
     "topic": "random topic", 
@@ -18,6 +21,11 @@ f"To respond, use the following this JSON format: {json_to_string(json_format)}"
 topic_planner_assistant = f"{json_to_string(json_example_format)}"
 
 topic_planner_user_message = "Tell me a random topic"
+
+def get_random_user_preference(user: User) -> str:
+    user_preferences = get_user_preferences(user)
+    random_user_preference = random.choice(user_preferences)
+    return random_user_preference.preference
 
 def get_random_topic() -> str:
     messages = []

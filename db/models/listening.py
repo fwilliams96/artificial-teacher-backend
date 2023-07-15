@@ -10,8 +10,10 @@ class MessageType(str, Enum):
     LISTENING = 'listening'
 
 class Word(BaseModel):
-    value: str
-    writable: bool
+    word: str
+    isWord: bool
+    askable: bool
+    wrong: bool | None
 
 class Sentence(BaseModel):
     id: str
@@ -23,6 +25,7 @@ class Listening(BaseModel):
     id: str | None
     topic: str
     sentences: list[Sentence] | None
+    finished: bool = False
 
 class SentenceCheckRequest(BaseModel):
     user_sentence: str
