@@ -1,5 +1,7 @@
 import base64
 import random
+import re
+import string
 
 from fastapi import HTTPException, status
 from db.client import db_client
@@ -84,31 +86,55 @@ def generate_sentence(sentence_id: str, topic: str) -> Sentence:
 
 def generate_words(sentence: str) -> list[Word]:
 
-    words_str = sentence.split(" ")
-    words = [{}]*len(words_str) # TODO check that minimum there is one writable word
-    any_writable_word = False
+    # Agregamos espacios antes y después de cada signo de puntuación
+    sentence_with_spaces = re.sub("([.,!?;])", r' \1 ', sentence)
 
-    for word_index in range(len(words_str)):
-        writable_word = random.choice([True, False])
-        if writable_word:
-            words[word_index] = Word(value=words_str[word_index], writable=True)
-            any_writable_word = True
+    elements = sentence_with_spaces.split()
+
+    # Creamos una lista de diccionarios, donde cada diccionario representa un elemento
+    # y tiene un indicador de si es una palabra (no un signo de puntuación).
+    elements_with_indicators = [
+        {'word': element, 'isWord': element not in string.punctuation}
+        for element in elements
+    ]
+
+    # Aquí seleccionamos aleatoriamente palabras para preguntar al usuario.
+    words = [elemento for elemento in elements_with_indicators if elemento['isWord']]
+    num_words_to_ask = max(1, len(words) // 5)
+
+    question_indexes = random.sample(range(len(words)), num_words_to_ask)
+    
+    # Agregamos el indicador de pregunta a los elementos que son palabras.
+    for i, element in enumerate(elements_with_indicators):
+        if element['isWord']:
+            element['askable'] = i in question_indexes
         else:
-            words[word_index] = Word(value=words_str[word_index], writable=False)
+            element['askable'] = False
 
-    if not any_writable_word:
-        words[0].writable = True
+    return [Word(**element) for element in elements_with_indicators]
 
-    return words
+def word_does_not_contain_punctuation_signs(word: str) -> bool:
+    return ";" not in word and "," not in word
 
-def update_listening(listening_id: str, sentences: list[Sentence]) -> list[Sentence]:
-    update_operation = {"$push": {"sentences": {"$each": [build_sentence_db(sentence) for sentence in sentences]}}}
-    db_client.listenings.update_one({"_id": ObjectId(listening_id)}, update_operation)
+def update_listening_db(listening: Listening):
+    update_operation = {"$push": {"sentences": {"$each": [build_sentence_db(sentence, listening.finished) for sentence in listening.sentences]}}}
+    db_client.listenings.update_one({"_id": ObjectId(listening.id)}, update_operation)
 
-def build_sentence_db(sentence: Sentence):
+def build_sentence_db(sentence: Sentence, listeningFinished: bool):
+    # TODO save words
     return {
-        "id": sentence.id,
-        "sentence": sentence.sentence
+            "id": sentence.id,
+            "sentence": sentence.sentence,
+            "words": [build_word_db(word) for word in sentence.words],
+            "finished": listeningFinished
+    }
+    
+def build_word_db(word: Word):
+    return {
+        "word": word.word,
+        "isWord": word.isWord,
+        "askable": word.askable,
+        "wrong": True if word.wrong else False
     }
 
 def recover_listening_sentence(listening_id: str, sentence_id: str) -> Sentence:
