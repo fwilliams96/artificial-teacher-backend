@@ -16,7 +16,7 @@ rewrite_context = "You are a JSON validator and your job is to return the JSON "
 
 def get_agent_response(messages: list[dict], max_tokens = 4096) -> str:
     try:
-        response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages, max_tokens=max_tokens)
+        response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
         response_content = response.choices[0].message.content
         return response_content
     except openai.error.RateLimitError:
