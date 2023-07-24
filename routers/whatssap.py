@@ -10,7 +10,7 @@ router = APIRouter(prefix='/whatssap', tags=["whatssap"], responses={status.HTTP
 async def verify(request: Request):
     if not request.query_params.get("hub.verify_token") == 'SneilaAtlantis':
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized.")
-    return request.query_params.get("hub.challenge")
+    return int(request.query_params.get("hub.challenge"))
     
 @router.post('/webhook', response_model=WhatssapMessage, status_code=status.HTTP_200_OK)
 async def send_message(request: Request):
