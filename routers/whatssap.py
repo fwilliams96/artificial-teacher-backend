@@ -22,9 +22,11 @@ async def send_message(request: Request):
     client_phone = data['entry'][0]['changes'][0]['value']['messages'][0]['from']
     message = data['entry'][0]['changes'][0]['value']['messages'][0]['text']['body']
     message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
-    print(f"Message id: {message_id}")
     timestamp = data['entry'][0]['changes'][0]['value']['messages'][0]['timestamp']
+    print(f"Client phone: {client_phone}")
+    print(f"Message id: {message_id}")
     print(f"Message timestamp: {timestamp}")
+    print(f"Message: {message}")
 
     if data is None or message is None or client_phone is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Body not properly informed.")

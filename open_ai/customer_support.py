@@ -7,7 +7,7 @@ from open_ai.general import get_agent_response
 
 customer_support_context = "Eres un agente de soporte al cliente en el área de odontología, por lo que solo debes responder consultas de este tipo."
 
-def answer_message(client_whatssap_message: WhatssapMessage) -> str:
+def answer_customer_message(client_whatssap_message: WhatssapMessage) -> str:
     conversation_db = recover_conversation_db(client_whatssap_message.client_phone)
     agent_response = answer_message(client_whatssap_message.message)
 
