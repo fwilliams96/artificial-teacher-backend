@@ -17,7 +17,7 @@ async def send_message(request: Request):
     # if not request.query_params.get("hub.verify_token") == 'SneilaAtlantis':
     #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized.")
     
-    data = request.json()
+    data = await request.json()
 
     client_phone = data['entry'][0]['changes'][0]['value']['messages'][0]['from']
     message = data['entry'][0]['changes'][0]['value']['messages'][0]['text']['body']
