@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Response, status, HTTPException
 from fastapi.routing import APIRoute
 from db.models.whatssap import WhatssapMessage, WhatssapMessageOrigin
 
-from open_ai.customer_support import answer_message
+from open_ai.customer_support import answer_customer_message
 
 router = APIRouter(prefix='/whatssap', tags=["whatssap"], responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
 
@@ -31,7 +31,7 @@ async def send_message(request: Request):
     if data is None or message is None or client_phone is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Body not properly informed.")
 
-    return answer_message(
+    return answer_customer_message(
         WhatssapMessage(
             client_phone=client_phone,
             message=message,
