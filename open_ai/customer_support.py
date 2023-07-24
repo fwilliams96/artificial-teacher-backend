@@ -12,6 +12,7 @@ def answer_message(client_whatssap_message: WhatssapMessage) -> str:
     agent_response = answer_message(client_whatssap_message.message)
 
     agent_whatssap_message = WhatssapMessage(
+        client_phone=client_whatssap_message.client_phone,
         origin=WhatssapMessageOrigin.SERVER,
         message=agent_response
     )

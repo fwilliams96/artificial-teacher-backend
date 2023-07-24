@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Response, status, HTTPException
 from fastapi.routing import APIRoute
-from db.models.whatssap import WhatssapMessage
+from db.models.whatssap import WhatssapMessage, WhatssapMessageOrigin
 
 from open_ai.customer_support import answer_message
 
@@ -24,6 +24,7 @@ async def send_message(request: Request):
     message_id = data['entry'][0]['changes'][0]['value']['messages'][0]['id']
     print(f"Message id: {message_id}")
     timestamp = data['entry'][0]['changes'][0]['value']['messages'][0]['timestamp']
+    print(f"Message timestamp: {timestamp}")
 
     if data is None or message is None or client_phone is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Body not properly informed.")
@@ -32,6 +33,7 @@ async def send_message(request: Request):
         WhatssapMessage(
             client_phone=client_phone,
             message=message,
+            origin=WhatssapMessageOrigin.CLIENT,
             timestamp=timestamp
         )
     )
