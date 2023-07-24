@@ -14,8 +14,8 @@ async def verify(request: Request):
     
 @router.post('/webhook', response_model=WhatssapMessage, status_code=status.HTTP_200_OK)
 async def send_message(request: Request):
-    if not request.query_params.get("hub.verify_token") == 'SneilaAtlantis':
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized.")
+    # if not request.query_params.get("hub.verify_token") == 'SneilaAtlantis':
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized.")
     
     data = request.json()
 
@@ -25,8 +25,8 @@ async def send_message(request: Request):
     print(f"Message id: {message_id}")
     timestamp = data['entry'][0]['changes'][0]['value']['messages'][0]['timestamp']
 
-    if message is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Message not informed.")
+    if data is None or message is None or client_phone is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Body not properly informed.")
 
     return answer_message(
         WhatssapMessage(
