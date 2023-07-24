@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import chat, auth, users, listening, sentences, preferences, user_preferences
+from routers import chat, auth, users, listening, sentences, preferences, user_preferences, whatssap
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -27,6 +27,7 @@ app.include_router(listening.router)
 app.include_router(sentences.router)
 app.include_router(preferences.router)
 app.include_router(user_preferences.router)
+app.include_router(whatssap.router)
 
 # http://localhost:8000/docs - Swagger
 # http://localhost:8000/redoc - Redoc
