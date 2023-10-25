@@ -4,10 +4,10 @@ from typing import Optional
 # Entidad user
 class User(BaseModel):
     id: Optional[str]
-    email: str
-    disabled: Optional[bool]
+    email: Optional[str] = None
+    disabled: Optional[bool] = None
     first_name: str
-    last_name: str
+    last_name: Optional[str] = None
     level: int
     score: int
 
