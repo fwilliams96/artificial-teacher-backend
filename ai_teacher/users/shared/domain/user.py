@@ -5,9 +5,9 @@ from typing import Optional
 class User(BaseModel):
     id: Optional[str]
     email: Optional[str] = None
-    disabled: Optional[bool]
+    disabled: Optional[bool] = None
     first_name: str
-    last_name: str
+    last_name: Optional[str] = None
     level: int
     score: int
 
