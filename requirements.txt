@@ -1,6 +1,5 @@
-fastapi
+fastapi[all]
 openai
-openai_whisper
 passlib
 pydantic
 pymongo

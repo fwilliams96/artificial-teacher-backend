@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import chat, auth, users, listening, sentences, preferences, user_preferences
+from routers import free_chat, auth, users, preferences, user_preferences, user_listenings, user_routines, role_play, user_pronunciations
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -22,11 +22,13 @@ app.add_middleware(
 # Routers
 app.include_router(auth.router)
 app.include_router(users.router)
-app.include_router(chat.router)
-app.include_router(listening.router)
-app.include_router(sentences.router)
+app.include_router(free_chat.router)
 app.include_router(preferences.router)
 app.include_router(user_preferences.router)
+app.include_router(user_listenings.router)
+app.include_router(user_routines.router)
+app.include_router(role_play.router)
+app.include_router(user_pronunciations.router)
 
 # http://localhost:8000/docs - Swagger
 # http://localhost:8000/redoc - Redoc
