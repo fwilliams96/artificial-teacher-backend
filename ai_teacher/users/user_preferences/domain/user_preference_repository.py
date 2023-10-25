@@ -1,5 +1,4 @@
 import abc
-
 from ai_teacher.users.user_preferences.domain.user_preference import UserPreference
 
 class UserPreferenceRepository(abc.ABC):

@@ -18,3 +18,7 @@ class UserRepository(abc.ABC):
     @abc.abstractclassmethod
     def find_by_id(self, user_id: str) -> UserDb | None:
         pass
+
+    @abc.abstractclassmethod
+    def increment_score(self, user_id: str, score: int):
+        pass

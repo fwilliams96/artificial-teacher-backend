@@ -8,11 +8,12 @@ class UserCardGenerator:
         self.user_sentence_generator = user_sentence_generator
         self.text_to_speech_transformer = text_to_speech_transformer
 
-    def generate(self, word: str) -> UserCard:
+    def generate(self, user_id: str, word: str) -> UserCard:
         sentence = self.user_sentence_generator.generate(word)
         sentence_base64 = self.text_to_speech_transformer.transform_to_base64(sentence)
         return UserCard(
             word=word,
             sentence=sentence,
-            sentence_speech=sentence_base64
+            sentence_speech=sentence_base64,
+            user_id=user_id
         )

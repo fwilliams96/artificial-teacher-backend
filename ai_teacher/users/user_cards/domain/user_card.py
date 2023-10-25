@@ -1,12 +1,14 @@
+from typing import Optional
 from pydantic import BaseModel
 
 class UserCard(BaseModel):
-    id: str | None
+    id: Optional[str] = None
     word: str
     sentence: str
     sentence_speech: str
+    user_id: str
 
 class UserCardSentence(BaseModel):
-    id: str | None
+    id: Optional[str] = None
     word: str
     sentence: str

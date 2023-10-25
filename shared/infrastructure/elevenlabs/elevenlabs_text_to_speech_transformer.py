@@ -3,5 +3,5 @@ from shared.infrastructure.elevenlabs.client.elevenlabs_client import text_to_sp
 
 class ElevenlabsTextToSpeechTransformer(ExternalTextToSpeechTransformer):
 
-    def transform(text: str) -> bytes:
+    def transform(self, text: str) -> bytes:
         return text_to_speech(text)

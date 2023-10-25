@@ -3,7 +3,7 @@ from backoffice.preferences.domain.preference import Preference
 from backoffice.preferences.domain.preference_repository import PreferenceRepository
 from backoffice.preferences.infrastructure.persistence.mongo.mappers.domain_to_entity_mapper import map_domain_to_entity
 from backoffice.preferences.infrastructure.persistence.mongo.mappers.entity_to_domain_mapper import map_entity_to_domain
-from shared.infrastructure.persistence.mongo.config.mongo_config import db_client
+from shared.infrastructure.persistence.config.mongo_config import db_client
 
 class MongoPreferenceRepository(PreferenceRepository):
 
@@ -18,5 +18,5 @@ class MongoPreferenceRepository(PreferenceRepository):
     def create_preference(self, preference: Preference) -> Preference:
         preference_db = map_domain_to_entity(preference)
         preference_id = db_client.preferences.insert_one(preference_db).inserted_id
-        preference.id = preference_id
+        preference.id = str(preference_id)
         return preference

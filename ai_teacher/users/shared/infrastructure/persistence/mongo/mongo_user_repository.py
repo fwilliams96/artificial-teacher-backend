@@ -3,34 +3,41 @@ from ai_teacher.users.shared.domain.user import User, UserDb
 from ai_teacher.users.shared.domain.user_repository import UserRepository
 from ai_teacher.users.shared.infrastructure.persistence.mongo.mappers.domain_to_entity_mapper import map_domain_to_entity
 from ai_teacher.users.shared.infrastructure.persistence.mongo.mappers.entity_to_domain_mapper import map_entity_to_domain
-from shared.infrastructure.persistence.mongo.config.mongo_config import db_client
+from shared.infrastructure.persistence.config.mongo_config import db_client
 
 class MongoUserRepository(UserRepository):
 
-    def create(self, user: UserDb) -> User:
+    def create(self, user: UserDb) -> UserDb:
         user_db = map_domain_to_entity(user)
         user_id = db_client.users.insert_one(user_db).inserted_id
-
-        return User(
-            id=user_id,
-            email=user.email,
-            disabled=user.disabled
-        )
+        user.id = str(user_id)
+        return user
     
-    def update(self, user: UserDb) -> User:
+    def update(self, user: UserDb) -> UserDb:
         user_db = map_domain_to_entity(user)
         db_client.users.find_one_and_replace({"_id": ObjectId(user.id)}, user_db)
+        return user
 
-        return User(
-            id=user.id,
-            email=user.email,
-            disabled=user.disabled
-        )
-
-    def find_by_email(self, email: str) -> User | None:
+    def find_by_email(self, email: str) -> UserDb | None:
         user_db = db_client.users.find_one({"email": email})
         return map_entity_to_domain(user_db) if user_db != None else None
 
-    def find_by_id(self, user_id: str) -> User | None:
+    def find_by_id(self, user_id: str) -> UserDb | None:
         user_db = db_client.users.find_one({"_id": ObjectId(user_id)})
         return map_entity_to_domain(user_db) if user_db != None else None
+    
+    def increment_score(self, user_id: str, score: int):
+        user_score_db = db_client.users.find_one({"_id": ObjectId(user_id)})
+
+        if user_score_db != None:
+            user_score = map_entity_to_domain(user_score_db)
+            user_score.score += score
+            while user_score.score >= 100:
+                remaining = user_score.score - 100
+                user_score.score = remaining
+                user_score.level += 1
+            db_client.users.find_one_and_replace({"_id": ObjectId(user_id)}, map_domain_to_entity(user_score))
+
+    def find_all(self) -> list[UserDb]:
+        users_db = db_client.users.find().sort("level", -1)
+        return [map_entity_to_domain(user_db) for user_db in users_db]

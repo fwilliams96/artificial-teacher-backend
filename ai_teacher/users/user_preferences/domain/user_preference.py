@@ -1,7 +1,8 @@
+from typing import Optional
 from pydantic import BaseModel
 
 class UserPreference(BaseModel):
-    id: str | None
+    id: Optional[str] = None
     preference_id: str
-    preference: str | None
-    user_id: str | None
+    preference: Optional[str] = None
+    user_id: Optional[str] = None

@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 class UserWord(BaseModel):
@@ -7,13 +8,14 @@ class UserWord(BaseModel):
     wrong: bool
 
 class UserSentence(BaseModel):
-    id: str
     words: list[UserWord]
     sentence: str
+    audio: str
 
 class UserListening(BaseModel):
-    id: str | None
-    listening_id: str
+    id: Optional[str] = None
+    topic: str
     user_id: str
     finished: bool = False
     sentences: list[UserSentence] = []
+    routine_id: Optional[str] = None
