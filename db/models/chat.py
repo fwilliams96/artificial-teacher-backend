@@ -2,6 +2,8 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel, Field
 from enum import Enum
 
+from ai_teacher.activities.flashcard.domain.flashcard import FlashCard
+
 # Entidad chatgpt question
 class ChatGPTQuestion(BaseModel):
     context_id: Optional[str]
@@ -12,26 +14,6 @@ class ChatGPTAnswer(BaseModel):
     context_id: str
     content: str
     transcription: Optional[str]
-
-class ActivityType(str, Enum):
-    FLASHCARD = 'flashcard'
-
-class FlashCard(BaseModel):
-    sentence: str
-    correct_sentence: str
-    correct_option: str
-    options: list[str]
-
-class Activity(BaseModel):
-    incorrect: str
-    correct: str
-    activity_type: ActivityType
-    comments: Optional[str]
-    active = True
-
-class AgentFlashCardActivity(Activity):
-    flashcard: FlashCard
-    activity_type = ActivityType.FLASHCARD
 
 class MessageContentType(str, Enum):
     TEXT = 'text'
@@ -51,7 +33,7 @@ class UserMessage(BaseModel):
 # Entidad chatgpt answer
 class ServerMessage(BaseModel):
     content_type: MessageContentType
-    content: str | AgentFlashCardActivity
+    content: str | FlashCard
     message_type: MessageType
     transcription: Optional[str] = None
 

@@ -15,8 +15,8 @@ def check_is_valid_json_and_get_correct_json(json_string):
         return False, json_string
     json_string = extract_existing_json(json_string)
     print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After extracting json: {json_string} <<<<<<<<<<<<<<<<<<<\n")
-    json_string = fix_json_quotes(json_string)
-    print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After fixing json quotes: {json_string} <<<<<<<<<<<<<<<<<<<\n")
+    #json_string = fix_json_quotes(json_string)
+    #print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After fixing json quotes: {json_string} <<<<<<<<<<<<<<<<<<<\n")
     try:
         json.loads(json_string)
         return True, json_string
@@ -40,7 +40,7 @@ def fix_json_quotes(json_string) -> str:
     try:
         obj = ast.literal_eval(json_string)
         return json.dumps(obj)
-    except SyntaxError as e:
+    except Exception as e:
         print("Literal eval failed, trying to rewrite JSON..")
         return rewrite_json(json_string)
     

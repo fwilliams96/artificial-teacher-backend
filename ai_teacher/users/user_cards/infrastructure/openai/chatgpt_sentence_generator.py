@@ -23,10 +23,10 @@ class ChatgptSentenceGenerator(ExternalSentenceGenerator):
     
     def generate(self, word: str) -> str:
         messages=[{"role": "system", "content": self.sentence_writer_context}]
-        messages.append({"role": "user", "content": self.sentence_writer_user_message("ruins")})
+        messages.append({"role": "user", "content": ChatgptSentenceGenerator.sentence_writer_user_message("ruins")})
         messages.append({"role": "assistant", "content": self.sentence_writer_assistant})
 
-        messages.append({"role": "user", "content": self.sentence_writer_user_message(word)})
+        messages.append({"role": "user", "content": ChatgptSentenceGenerator.sentence_writer_user_message(word)})
 
         #agent_messages = fix_json_quotes(agent_messages)
         

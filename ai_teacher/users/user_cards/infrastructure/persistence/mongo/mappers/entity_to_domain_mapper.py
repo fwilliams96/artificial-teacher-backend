@@ -5,5 +5,6 @@ def map_entity_to_domain(user_card: dict) -> UserCard:
         id=str(user_card["_id"]),
         word=user_card["word"],
         sentence=user_card["sentence"],
-        audio_sentence=user_card["audio_sentence"]
+        sentence_speech=user_card["sentence_speech"],
+        user_id=str(user_card["user_id"])
     )

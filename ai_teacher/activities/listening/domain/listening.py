@@ -17,3 +17,7 @@ class Listening(BaseModel):
     id: str | None
     topic: str
     sentences: list[Sentence] | None
+
+class SentenceCheckResult(BaseModel):
+    correct: bool
+    correct_sentence: str

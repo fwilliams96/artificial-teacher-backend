@@ -12,4 +12,13 @@ class UserUpdator:
     def update(self, user: User) -> User:
         if self.user_finder.find_user_by_id(id) is None or id != user.id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
-        return self.user_repository.update(user)
+        user_db = self.user_repository.update(user)
+        return User(
+            id=user_db.id,
+            disabled=user_db.disabled,
+            email=user_db.email,
+            first_name=user_db.first_name,
+            last_name=user_db.last_name,
+            level=user_db.level,
+            score=user_db.score
+        )

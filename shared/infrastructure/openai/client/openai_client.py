@@ -2,15 +2,15 @@ import openai
 
 from fastapi import HTTPException, status
 
-from config.openai_config import API_KEY
+from shared.infrastructure.openai.client.config.openai_config import API_KEY
 
 openai.api_key = API_KEY
 
 def send_messages_to_ai(messages: list[dict]) -> str:
     try:
-        response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
+        response = openai.ChatCompletion.create(model="gpt-4", messages=messages)
         response_content = response.choices[0].message.content
-        #print(f"Chatgpt answer: {response_content}")
+        #print(f"Chatgpt choices: {response}")
         return response_content
     except openai.error.RateLimitError:
         print(f"Your user has exceed the quota")
