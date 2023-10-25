@@ -4,7 +4,7 @@ from typing import Optional
 # Entidad user
 class User(BaseModel):
     id: Optional[str]
-    email: str
+    email: Optional[str] = None
     disabled: Optional[bool]
     first_name: str
     last_name: str

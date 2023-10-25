@@ -38,6 +38,15 @@ class MongoUserRepository(UserRepository):
                 user_score.level += 1
             db_client.users.find_one_and_replace({"_id": ObjectId(user_id)}, map_domain_to_entity(user_score))
 
-    def find_all(self) -> list[UserDb]:
+    def find_all(self) -> list[User]:
         users_db = db_client.users.find().sort("level", -1)
-        return [map_entity_to_domain(user_db) for user_db in users_db]
+        users = [map_entity_to_domain(user_db) for user_db in users_db]
+        return [self.clean_user(user) for user in users]
+
+    def clean_user(self, user: UserDb):
+        return User(
+            first_name=user.first_name,
+            last_name=user.last_name,
+            level=user.level,
+            score=user.score
+        )
