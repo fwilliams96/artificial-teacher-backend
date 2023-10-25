@@ -46,7 +46,6 @@ class MongoUserRepository(UserRepository):
     def clean_user(self, user: UserDb):
         return User(
             first_name=user.first_name,
-            last_name=user.last_name,
             level=user.level,
             score=user.score
         )
