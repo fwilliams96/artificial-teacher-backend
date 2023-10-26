@@ -3,19 +3,15 @@ from ai_teacher.users.shared.application.user_auth import encrypt_password, get_
 from ai_teacher.users.shared.application.user_creator import UserCreator
 from ai_teacher.users.shared.application.user_finder import UserFinder
 from ai_teacher.users.shared.application.user_updator import UserUpdator
-from ai_teacher.users.shared.domain.user import User, UserDb
+from ai_teacher.users.shared.domain.user import NewUser, User, UserDb
 from ai_teacher.users.user_cards.application.user_card_finder import UserCardFinder
 from ai_teacher.users.user_cards.domain.user_card import UserCard
 
 router = APIRouter(prefix='/users', tags=["users"], responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
 
 @router.post('/', response_model=User, status_code=status.HTTP_201_CREATED)
-async def create_user(user_db: UserDb):
-    user_db.disabled = False
-    user_db.password = encrypt_password(user_db.password)
-
-    user = UserCreator().create(user_db)
-    return user
+async def create_user(user: NewUser):
+    return UserCreator().create(user)
 
 @router.get('/', response_model=User, status_code=status.HTTP_201_CREATED)
 async def get_user(user: User = Depends(get_current_user)):
