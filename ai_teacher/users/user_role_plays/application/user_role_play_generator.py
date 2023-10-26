@@ -2,7 +2,6 @@ from datetime import datetime
 import random
 from ai_teacher.users.user_role_plays.application.user_role_play_talker import UserRolePlayTalker
 from ai_teacher.users.user_role_plays.domain.role_play import RolePlay, RolePlayMessage, RolePlayMessageType, RolePlayType
-from ai_teacher.users.user_role_plays.infrastructure.openai.chatgpt_role_play_talker import ChatgptRolePlayTalker
 from ai_teacher.users.user_role_plays.infrastructure.persistence.mongo.mongo_role_play_repository import MongoRolePlayRepository
 
 class UserRolePlayGenerator:
@@ -14,11 +13,11 @@ class UserRolePlayGenerator:
         self.role_play_repository = role_play_repository
 
     def create(self, user_id: str, role_play_type = None, routine_id = None) -> RolePlay:
-
+        print(f"Role play type before: {role_play_type}")
         if role_play_type is None:
-            role_play_type = RolePlayType.JOB_INTERVIEW #random.choice(list(RolePlayType))
+            role_play_type = random.choice(list(RolePlayType))
 
-        print(f"Role play type: {role_play_type}")
+        print(f"Role play type after: {role_play_type}")
 
         role_play = RolePlay(
             type=role_play_type,
