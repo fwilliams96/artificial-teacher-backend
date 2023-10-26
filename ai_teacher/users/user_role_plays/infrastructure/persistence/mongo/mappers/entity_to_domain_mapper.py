@@ -7,7 +7,7 @@ def map_entity_to_domain(role_play: dict) -> RolePlay:
         type=RolePlayType[str(role_play["type"]).upper()],
         is_over=role_play["is_over"],
         user_id=str(role_play["user_id"]),
-        routine_id=str(role_play["routine_id"]),
+        routine_id=str(role_play["routine_id"]) if role_play["routine_id"] != None else None,
         creation_date=datetime.strptime(role_play["creation_date"], '%Y-%m-%d %H:%M:%S'),
     )
     
