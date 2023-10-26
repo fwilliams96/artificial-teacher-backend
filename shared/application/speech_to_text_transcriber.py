@@ -1,4 +1,5 @@
 import base64
+import os
 import time
 
 from fastapi import HTTPException
@@ -15,7 +16,9 @@ class SpeechToTextTranscriber:
         audio_bytes = self.base64_to_bytes(speech_base64)
         with open(f'{audio_filename}', 'wb') as buffer:
             buffer.write(audio_bytes)
-        return self.external_speech_to_text_transcriber.transcribe(audio_filename)
+        transcription = self.external_speech_to_text_transcriber.transcribe(audio_filename)
+        self.delete_file(audio_filename)
+        return transcription
     
     def base64_to_bytes(self, base64Text: str):
         try:
@@ -23,3 +26,7 @@ class SpeechToTextTranscriber:
             return audio_bytes
         except Exception as e:
             raise HTTPException(status_code=400, detail="Invalid base64 data") from e
+        
+    def delete_file(self, filename: str):
+     if os.path.isfile(filename):
+        os.remove(filename)

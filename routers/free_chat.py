@@ -19,7 +19,7 @@ def create_chat(user: UserDb = Depends(get_current_user)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error creating chat")
 
 @router.post('/{chat_id}', response_model=list[FreeChatMessage], status_code=status.HTTP_200_OK)
-def chat(chat_id: str, user_message: FreeChatMessage, response_in_speech = False, user: UserDb = Depends(get_current_user)):
+def chat(chat_id: str, user_message: FreeChatMessage, response_in_speech: bool = False, user: UserDb = Depends(get_current_user)):
      try:
         user_message.chat_id = chat_id
         user_message.sender_id = user.id
