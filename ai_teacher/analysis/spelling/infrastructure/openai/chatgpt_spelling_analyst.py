@@ -29,11 +29,11 @@ class ChatgptSpellingAnalyst(ExternalSpellingAnalyst):
         messages.append({"role": "assistant", "content": self.analyst_assistant})
         messages.append({"role": "user", "content": ChatgptSpellingAnalyst.analyst_user_message(sentence)})
 
-        print(f"\n>>>>>>>>>>>>>>>>> [SPELLING ANALYST] Sent messages <<<<<<<<<<<<<<<<<<<\n")
-        print(f"{messages} \n")
+        #print(f"\n>>>>>>>>>>>>>>>>> [SPELLING ANALYST] Sent messages <<<<<<<<<<<<<<<<<<<\n")
+        #print(f"{messages} \n")
         agent_response = send_messages_to_ai(messages)
-        print(f"\n>>>>>>>>>>>>>>>>> [SPELLING ANALYST] Received message <<<<<<<<<<<<<<<<<<<\n")
-        print(f"{agent_response} \n")
+        #print(f"\n>>>>>>>>>>>>>>>>> [SPELLING ANALYST] Received message <<<<<<<<<<<<<<<<<<<\n")
+        #print(f"{agent_response} \n")
 
         max_retries = 1
         retries = 0
@@ -41,12 +41,12 @@ class ChatgptSpellingAnalyst(ExternalSpellingAnalyst):
         retry_messages.extend(messages)
         valid_json, agent_response = check_is_valid_json_and_get_correct_json(agent_response)
         while (not valid_json) and (retries < max_retries):
-            print(f"\n>>>>>>>>>>>>>>>>> [SPELLING ANALYST] Sent messages (retry) <<<<<<<<<<<<<<<<<<<\n")
-            print(f"{retry_messages} \n")
+            #print(f"\n>>>>>>>>>>>>>>>>> [SPELLING ANALYST] Sent messages (retry) <<<<<<<<<<<<<<<<<<<\n")
+            #print(f"{retry_messages} \n")
             retry_messages.append({"role": "user", "content": "Return the response in the JSON format I asked you in the first message please."})
             agent_response = send_messages_to_ai(retry_messages, 50)
-            print(f"\n>>>>>>>>>>>>>>>>> [SPELLING ANALYST] Received messages (retry) <<<<<<<<<<<<<<<<<<<\n")
-            print(f"{agent_response} \n")
+            #print(f"\n>>>>>>>>>>>>>>>>> [SPELLING ANALYST] Received messages (retry) <<<<<<<<<<<<<<<<<<<\n")
+            #print(f"{agent_response} \n")
             valid_json, agent_response = check_is_valid_json_and_get_correct_json(agent_response)
             retries += 1
 
