@@ -93,11 +93,11 @@ class ChatgptRolePlayTalker(ExternalRolePlayTalker):
             else:
                 messages.append({"role": "user", "content": role_play_message.message})
 
-        print(f"\n>>>>>>>>>>>>>>>>> [ROLE PLAY TALKER] Sent messages <<<<<<<<<<<<<<<<<<<\n")
-        print(f"{messages} \n")
+        #print(f"\n>>>>>>>>>>>>>>>>> [ROLE PLAY TALKER] Sent messages <<<<<<<<<<<<<<<<<<<\n")
+        #print(f"{messages} \n")
         agent_response = send_messages_to_ai(messages)
-        print(f"\n>>>>>>>>>>>>>>>>> [ROLE PLAY TALKER] Received message <<<<<<<<<<<<<<<<<<<\n")
-        print(f"{agent_response} \n")
+        #print(f"\n>>>>>>>>>>>>>>>>> [ROLE PLAY TALKER] Received message <<<<<<<<<<<<<<<<<<<\n")
+        #print(f"{agent_response} \n")
 
         max_retries = 1
         retries = 0
@@ -105,12 +105,12 @@ class ChatgptRolePlayTalker(ExternalRolePlayTalker):
         retry_messages.extend(messages)
         valid_json, agent_response = check_is_valid_json_and_get_correct_json(agent_response)
         while (not valid_json) and (retries < max_retries):
-            print(f"\n>>>>>>>>>>>>>>>>> [ROLE PLAY TALKER] Sent messages (retry) <<<<<<<<<<<<<<<<<<<\n")
-            print(f"{retry_messages} \n")
+            #print(f"\n>>>>>>>>>>>>>>>>> [ROLE PLAY TALKER] Sent messages (retry) <<<<<<<<<<<<<<<<<<<\n")
+            #print(f"{retry_messages} \n")
             retry_messages.append({"role": "user", "content": "Return the response in the JSON format I asked you in the first message please."})
             agent_response = send_messages_to_ai(retry_messages)
-            print(f"\n>>>>>>>>>>>>>>>>> [ROLE PLAY TALKER] Received messages (retry) <<<<<<<<<<<<<<<<<<<\n")
-            print(f"{agent_response} \n")
+            #print(f"\n>>>>>>>>>>>>>>>>> [ROLE PLAY TALKER] Received messages (retry) <<<<<<<<<<<<<<<<<<<\n")
+            #print(f"{agent_response} \n")
             valid_json, agent_response = check_is_valid_json_and_get_correct_json(agent_response)
             retries += 1
 

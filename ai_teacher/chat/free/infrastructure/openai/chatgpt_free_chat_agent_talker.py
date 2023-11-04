@@ -21,11 +21,11 @@ class ChatGptFreeChatAgentTalker(ExternalFreeChatAgentTalker):
             else:
                 messages.append({"role": "user", "content": free_chat_message.message})
 
-        print(f"\n>>>>>>>>>>>>>>>>> [FREE_CHAT TALKER] Sent messages <<<<<<<<<<<<<<<<<<<\n")
-        print(f"{messages} \n")
+        #print(f"\n>>>>>>>>>>>>>>>>> [FREE_CHAT TALKER] Sent messages <<<<<<<<<<<<<<<<<<<\n")
+        #print(f"{messages} \n")
         agent_response = send_messages_to_ai(messages)
-        print(f"\n>>>>>>>>>>>>>>>>> [FREE_CHAT TALKER] Received message <<<<<<<<<<<<<<<<<<<\n")
-        print(f"{agent_response} \n")
+        #print(f"\n>>>>>>>>>>>>>>>>> [FREE_CHAT TALKER] Received message <<<<<<<<<<<<<<<<<<<\n")
+        #print(f"{agent_response} \n")
 
         messages.append({"role": "assistant", "content": agent_response})
 

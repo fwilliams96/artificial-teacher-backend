@@ -13,11 +13,8 @@ class UserRolePlayGenerator:
         self.role_play_repository = role_play_repository
 
     def create(self, user_id: str, role_play_type = None, routine_id = None) -> RolePlay:
-        print(f"Role play type before: {role_play_type}")
         if role_play_type is None:
             role_play_type = random.choice(list(RolePlayType))
-
-        print(f"Role play type after: {role_play_type}")
 
         role_play = RolePlay(
             type=role_play_type,

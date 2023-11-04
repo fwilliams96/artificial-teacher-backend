@@ -10,13 +10,13 @@ rewrite_context = "You are a JSON validator and your job is to return the JSON "
 
 def check_is_valid_json_and_get_correct_json(json_string):
     contains_json = check_contains_json(json_string)
-    print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - String contains a json?: {contains_json} <<<<<<<<<<<<<<<<<<<\n")
+    #print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - String contains a json?: {contains_json} <<<<<<<<<<<<<<<<<<<\n")
     if not contains_json:
         return False, json_string
     json_string = extract_existing_json(json_string)
-    print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After extracting json: {json_string} <<<<<<<<<<<<<<<<<<<\n")
+    #print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After extracting json: {json_string} <<<<<<<<<<<<<<<<<<<\n")
     #json_string = fix_json_quotes(json_string)
-    #print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After fixing json quotes: {json_string} <<<<<<<<<<<<<<<<<<<\n")
+    ##print(f"\n>>>>>>>>>>>>>>>>> [VALIDATING] - After fixing json quotes: {json_string} <<<<<<<<<<<<<<<<<<<\n")
     try:
         json.loads(json_string)
         return True, json_string
@@ -41,18 +41,18 @@ def fix_json_quotes(json_string) -> str:
         obj = ast.literal_eval(json_string)
         return json.dumps(obj)
     except Exception as e:
-        print("Literal eval failed, trying to rewrite JSON..")
+        #print("Literal eval failed, trying to rewrite JSON..")
         return rewrite_json(json_string)
     
 def rewrite_json(json: str) -> str:
     agent_messages = [{"role": "system", "content": rewrite_context}]
     user_message = f"Please rewrite the following JSON using the context I gave you before: {json}."
     agent_messages.append({"role": "user", "content": user_message})
-    print(f"\n>>>>>>>>>>>>>>>>> [REWRITE] Sent messages <<<<<<<<<<<<<<<<<<<\n")
-    print(f"{agent_messages} \n")
+    #print(f"\n>>>>>>>>>>>>>>>>> [REWRITE] Sent messages <<<<<<<<<<<<<<<<<<<\n")
+    #print(f"{agent_messages} \n")
     agent_response = send_messages_to_ai(agent_messages)
-    print(f"\n>>>>>>>>>>>>>>>>> [REWRITE] Received message <<<<<<<<<<<<<<<<<<<\n")
-    print(f"{agent_response} \n")
+    #print(f"\n>>>>>>>>>>>>>>>>> [REWRITE] Received message <<<<<<<<<<<<<<<<<<<\n")
+    #print(f"{agent_response} \n")
     return agent_response
 
 def string_to_json(json_string: str) -> dict:
