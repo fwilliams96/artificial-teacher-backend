@@ -15,7 +15,7 @@ def create_chat(user: UserDb = Depends(get_current_user)):
      try:
         return FreeChatGenerator().create(user.id)
      except Exception as e:
-        print(e)
+        #print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error creating chat")
 
 @router.post('/{chat_id}', response_model=list[FreeChatMessage], status_code=status.HTTP_200_OK)
@@ -25,7 +25,7 @@ def chat(chat_id: str, user_message: FreeChatMessage, response_in_speech: bool =
         user_message.sender_id = user.id
         return FreeChatAgentTalker().talk(user_message, response_in_speech)
      except Exception as e:
-        print(e)
+        #print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error creating chat")
      
 @router.get('/{chat_id}', response_model=FreeChat, status_code=status.HTTP_200_OK)
@@ -36,7 +36,7 @@ def recover_chat(chat_id: str):
          raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Free chat not found")
       return free_chat
    except Exception as e:
-      print(e)
+      #print(e)
       raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error recovering role play")
    
 @router.post('/{chat_id}/finish', response_model=FreeChat, status_code=status.HTTP_200_OK)
@@ -46,7 +46,7 @@ def finish_chat(chat_id: str, background_tasks: BackgroundTasks, user: UserDb = 
         background_tasks.add_task(UserScoreIncrementer().increment, user.id, 50)
         return free_chat
      except Exception as e:
-        print(e)
+        #print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error finishing chat")
      
 '''
@@ -91,7 +91,7 @@ def chat_text_audio(context_id: str, user_message: str) -> list[ServerMessage]:
      try:
         return analyze_message_and_generate_response(context_id, user_message, MessageContentType.AUDIO)
      except Exception as e:
-        print(e)
+        #print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating audio")
     
 def chat_audio_text(context_id: str, user_message: str) -> list[ServerMessage]:
@@ -105,7 +105,7 @@ def chat_audio_text(context_id: str, user_message: str) -> list[ServerMessage]:
             transcription = AudioToTextTranscriber().transcribe(audio_filename)
             return analyze_message_and_generate_response(context_id, transcription, MessageContentType.TEXT)
     except Exception as e:
-        print(e)
+        #print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error loading audio")
     finally:
         delete_file(audio_filename)
@@ -124,7 +124,7 @@ def chat_audio_audio(context_id: str, user_message: str) -> list[ServerMessage]:
 
             return analyze_message_and_generate_response(context_id, transcription, MessageContentType.AUDIO)
     except Exception as e:
-        print(e)
+        #print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error loading audio")
     finally:
         delete_file(audio_filename)
@@ -170,14 +170,14 @@ def generate_conversation_message_based_on_response_type(server_message: str, re
             content=audio_data_base64
         )
     except Exception as e:
-        print(e)
+        #print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating audio")
     
 def talker_response(context_id: str, user_message: str) -> str:
     try:
         return answer_message(context_id, user_message)
     except Exception as e:
-        print(e)
+        #print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error generating response")
         
 def answer_is_correct(context_id: str, user_message: str) -> bool:
@@ -189,9 +189,9 @@ def answer_is_correct(context_id: str, user_message: str) -> bool:
     activity_type = last_activity_message_db['message']['activity_type']
     if activity_type == ActivityType.FLASHCARD:
         flashcard_activity = AgentFlashCardActivity(**last_activity_message_db['message']['content'])
-        print(f"User option: {user_message}")
-        print(f"Correct option: {flashcard_activity.flashcard.correct_option}")
-        print(f"Match?: {user_message == flashcard_activity.flashcard.correct_option}")
+        #print(f"User option: {user_message}")
+        #print(f"Correct option: {flashcard_activity.flashcard.correct_option}")
+        #print(f"Match?: {user_message == flashcard_activity.flashcard.correct_option}")
         return user_message == flashcard_activity.flashcard.correct_option, flashcard_activity.flashcard.correct_sentence
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Activity {activity_type.value} is not available yet.")
 

@@ -12,16 +12,16 @@ class UserPronunciationAnalyzer:
 
         transcription = self.speech_to_text_transcriber.transcribe(user_pronunciation.user_speech.audio)
 
-        print(f"Transcription of pronunciation: {transcription}")
+        #print(f"Transcription of pronunciation: {transcription}")
 
         user_words = self.generate_words(transcription)
         user_words_dict = self.build_words_dict(user_words)
-        #print(f"User words: {user_words}")
-        #print(f"User words length: {len(user_words)}")
+        ##print(f"User words: {user_words}")
+        ##print(f"User words length: {len(user_words)}")
 
         words = [system_word for system_word in user_pronunciation.sentence.words if system_word.is_word == True]
-        #print(f"System words: {words}")
-        #print(f"System words length: {len(words)}")
+        ##print(f"System words: {words}")
+        ##print(f"System words length: {len(words)}")
         
         for word in user_pronunciation.sentence.words:
             if word.is_word and word.word not in user_words_dict:
@@ -29,7 +29,7 @@ class UserPronunciationAnalyzer:
             else:
                 word.wrong = False
 
-        #print(f"Words after analysis: {user_pronunciation.sentence.words}")
+        ##print(f"Words after analysis: {user_pronunciation.sentence.words}")
         return user_pronunciation
     
     def generate_words(self, sentence: str) -> list[SentenceWord]:

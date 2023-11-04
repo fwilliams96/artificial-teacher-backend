@@ -51,11 +51,11 @@ class ChatgptFlashcardGenerator(ExternalFlashcardGenerator):
         messages.append({"role": "assistant", "content": self.flashcard_generator_assistant})
         messages.append({"role": "user", "content": ChatgptFlashcardGenerator.flashcard_generator_user_message(json_to_string(self.sentence_analysis_to_json(sentence_analysis)))})
 
-        print(f"\n>>>>>>>>>>>>>>>>> [FLASHCARD GENERATOR] Sent messages <<<<<<<<<<<<<<<<<<<\n")
-        print(f"{messages} \n")
+        #print(f"\n>>>>>>>>>>>>>>>>> [FLASHCARD GENERATOR] Sent messages <<<<<<<<<<<<<<<<<<<\n")
+        #print(f"{messages} \n")
         agent_response = send_messages_to_ai(messages)
-        print(f"\n>>>>>>>>>>>>>>>>> [FLASHCARD GENERATOR] Received message <<<<<<<<<<<<<<<<<<<\n")
-        print(f"{agent_response} \n")
+        #print(f"\n>>>>>>>>>>>>>>>>> [FLASHCARD GENERATOR] Received message <<<<<<<<<<<<<<<<<<<\n")
+        #print(f"{agent_response} \n")
 
         max_retries = 1
         retries = 0
@@ -63,12 +63,12 @@ class ChatgptFlashcardGenerator(ExternalFlashcardGenerator):
         retry_messages.extend(messages)
         valid_json, agent_response = check_is_valid_json_and_get_correct_json(agent_response)
         while (not valid_json) and (retries < max_retries):
-            print(f"\n>>>>>>>>>>>>>>>>> [FLASHCARD GENERATOR] Sent messages (retry) <<<<<<<<<<<<<<<<<<<\n")
-            print(f"{retry_messages} \n")
+            #print(f"\n>>>>>>>>>>>>>>>>> [FLASHCARD GENERATOR] Sent messages (retry) <<<<<<<<<<<<<<<<<<<\n")
+            #print(f"{retry_messages} \n")
             retry_messages.append({"role": "user", "content": "Return the response in the JSON format I asked you in the first message please."})
             agent_response = send_messages_to_ai(retry_messages, 50)
-            print(f"\n>>>>>>>>>>>>>>>>> [FLASHCARD GENERATOR] Received messages (retry) <<<<<<<<<<<<<<<<<<<\n")
-            print(f"{agent_response} \n")
+            #print(f"\n>>>>>>>>>>>>>>>>> [FLASHCARD GENERATOR] Received messages (retry) <<<<<<<<<<<<<<<<<<<\n")
+            #print(f"{agent_response} \n")
             valid_json, agent_response = check_is_valid_json_and_get_correct_json(agent_response)
             retries += 1
 
