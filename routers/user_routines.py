@@ -7,8 +7,12 @@ from ai_teacher.users.user_routines.domain.user_routine import UserRoutine
 
 router = APIRouter(prefix='/user-routines', tags=["user-routines"], responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
 
+@router.post('/', response_model=UserRoutine, status_code=status.HTTP_200_OK)
+def create_routine(user: UserDb = Depends(get_current_user)):
+    return UserRoutineGenerator().generate(user.id)
+
 @router.get('/', response_model=list[UserRoutine], status_code=status.HTTP_200_OK)
-def get_routine(active = False, user: UserDb = Depends(get_current_user)):
+def get_routines(active = False, user: UserDb = Depends(get_current_user)):
     if active:
         return UserRoutineFinder().find_active(user.id)
     return UserRoutineFinder().find_all(user.id)
@@ -20,6 +24,3 @@ def get_routine(routine_id: str):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Routine not found")
     return user_routine
 
-@router.post('/', response_model=UserRoutine, status_code=status.HTTP_200_OK)
-def create_routine(user: UserDb = Depends(get_current_user)):
-    return UserRoutineGenerator().generate(user.id)
