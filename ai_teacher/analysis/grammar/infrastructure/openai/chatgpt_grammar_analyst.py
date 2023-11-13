@@ -44,7 +44,7 @@ class ChatgptGrammarAnalyst(ExternalGrammarAnalyst):
             #print(f"\n>>>>>>>>>>>>>>>>> [GRAMMAR ANALYST] Sent messages (retry) <<<<<<<<<<<<<<<<<<<\n")
             #print(f"{retry_messages} \n")
             retry_messages.append({"role": "user", "content": "Return the response in the JSON format I asked you in the first message please."})
-            agent_response = send_messages_to_ai(retry_messages, 50)
+            agent_response = send_messages_to_ai(retry_messages)
             #print(f"\n>>>>>>>>>>>>>>>>> [GRAMMAR ANALYST] Received messages (retry) <<<<<<<<<<<<<<<<<<<\n")
             #print(f"{agent_response} \n")
             valid_json, agent_response = check_is_valid_json_and_get_correct_json(agent_response)

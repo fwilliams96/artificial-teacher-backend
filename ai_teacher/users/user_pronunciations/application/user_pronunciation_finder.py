@@ -1,6 +1,6 @@
 from typing import Optional
 from ai_teacher.users.user_pronunciations.domain.user_pronunciation import UserPronunciation
-from ai_teacher.users.user_pronunciations.infrastructure.mongo_user_pronunciation_repository import MongoUserPronunciationRepository
+from ai_teacher.users.user_pronunciations.infrastructure.persistence.mongo_user_pronunciation_repository import MongoUserPronunciationRepository
 
 class UserPronunciationFinder:
 
