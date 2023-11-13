@@ -3,7 +3,7 @@ from typing import Optional
 
 # Entidad user
 class User(BaseModel):
-    id: Optional[str]
+    id: Optional[str] = None
     email: Optional[str] = None
     disabled: Optional[bool] = None
     first_name: str

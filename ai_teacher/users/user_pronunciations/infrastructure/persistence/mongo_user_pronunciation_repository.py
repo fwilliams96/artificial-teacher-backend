@@ -2,8 +2,8 @@ from typing import Optional
 from bson import ObjectId
 from ai_teacher.users.user_pronunciations.domain.user_pronunciation import UserPronunciation
 from ai_teacher.users.user_pronunciations.domain.user_pronunciation_repository import UserPronunciationRepository
-from ai_teacher.users.user_pronunciations.infrastructure.mappers.domain_to_entity_mapper import map_domain_to_entity
-from ai_teacher.users.user_pronunciations.infrastructure.mappers.entity_to_domain_mapper import map_entity_to_domain
+from ai_teacher.users.user_pronunciations.infrastructure.persistence.mappers.domain_to_entity_mapper import map_domain_to_entity
+from ai_teacher.users.user_pronunciations.infrastructure.persistence.mappers.entity_to_domain_mapper import map_entity_to_domain
 from shared.infrastructure.persistence.config.mongo_config import db_client
 
 class MongoUserPronunciationRepository(UserPronunciationRepository):
