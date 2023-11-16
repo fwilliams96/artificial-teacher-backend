@@ -13,7 +13,7 @@ class ChatgptDescriptionRater(ExternalDescriptionRater):
 
     description_rater_prompt = f"Rate the following description of the attached image from 0 to 10. The response should follow this JSON format: {json_to_string(json_format)}"
      
-    def rate(self, user_solution: UserSolution, image: str) -> UserDescriptionCorrection:
+    def rate(self, user_description: str, image: str) -> UserDescriptionCorrection:
         messages= [
             {
                 "role": "user",
@@ -24,7 +24,7 @@ class ChatgptDescriptionRater(ExternalDescriptionRater):
                     },
                     {
                         "type": "text",
-                        "text": user_solution.text
+                        "text": user_description
                     },
                     {
                         "type": "image_url",
