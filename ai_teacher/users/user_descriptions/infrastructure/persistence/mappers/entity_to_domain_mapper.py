@@ -1,4 +1,4 @@
-from ai_teacher.users.user_descriptions.domain.user_description import UserDescription, UserDescriptionCorrection, UserSolution
+from ai_teacher.users.user_descriptions.domain.user_description import UserDescription, UserDescriptionCorrection, UserSolution, UserSolutionType
 
 def map_entity_to_domain(user_description: dict) -> UserDescription:
 
@@ -15,7 +15,8 @@ def map_entity_to_domain(user_description: dict) -> UserDescription:
 
 def map_user_solution_to_domain(user_solution: dict) -> UserSolution:
     return UserSolution(
-        text=user_solution["text"]
+        content=user_solution["content"],
+        type=UserSolutionType[str(user_solution["type"]).upper()]
     )
 
 def map_correction_to_domain(correction: dict) -> UserDescriptionCorrection:

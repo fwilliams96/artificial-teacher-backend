@@ -1,8 +1,14 @@
+from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
 
+class UserSolutionType(str, Enum):
+    SPEECH = 'SPEECH',
+    TEXT = 'TEXT'
+
 class UserSolution(BaseModel):
-    text: Optional[str] = None
+    content: str
+    type: UserSolutionType
 
 class UserDescriptionCorrection(BaseModel):
     description: Optional[str] = None

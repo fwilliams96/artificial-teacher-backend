@@ -14,7 +14,8 @@ def map_domain_to_entity(user_description: UserDescription) -> dict:
 
 def map_user_solution_to_entity(user_solution: UserSolution) -> dict:
     return {
-        "text": user_solution.text
+        "content": user_solution.content,
+        "type": user_solution.type
     }
 
 def map_correction_to_entity(correction: UserDescriptionCorrection) -> dict:

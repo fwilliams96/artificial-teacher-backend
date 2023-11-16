@@ -5,5 +5,5 @@ from ai_teacher.users.user_descriptions.domain.user_description import UserDescr
 class ExternalDescriptionRater(abc.ABC):
 
     @abc.abstractclassmethod
-    def rate(self, user_solution: UserSolution, image: str) -> UserDescriptionCorrection:
+    def rate(self, user_description: str, image: str) -> UserDescriptionCorrection:
         pass
