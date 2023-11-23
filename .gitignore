@@ -8,4 +8,5 @@ __pycache__/
 *.exe
 *.wav
 *.mp3
+*.png
 Spacefile
