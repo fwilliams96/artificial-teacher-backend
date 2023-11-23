@@ -15,7 +15,7 @@ class MongoUserRepository(UserRepository):
     
     def update(self, user: UserDb) -> UserDb:
         user_db = map_domain_to_entity(user)
-        db_client.users.find_one_and_replace({"_id": ObjectId(user.id)}, user_db)
+        db_client.users.find_one_and_update({"_id": ObjectId(user.id)}, {"$set" : user_db})
         return user
 
     def find_by_email(self, email: str) -> UserDb | None:

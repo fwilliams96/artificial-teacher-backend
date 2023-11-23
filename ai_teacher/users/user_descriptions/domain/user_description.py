@@ -20,8 +20,13 @@ class UserDescription(BaseModel):
     topic: str
     user_id: str
     finished: bool = False
-    image: str
+    image: Optional[str] = None
+    image_id: str
     user_solution: Optional[UserSolution] = None
     correction: Optional[UserDescriptionCorrection] = None
     routine_id: Optional[str] = None
 
+class ImageDescription(BaseModel):
+    id: Optional[str] = None
+    topic: str
+    image: str
