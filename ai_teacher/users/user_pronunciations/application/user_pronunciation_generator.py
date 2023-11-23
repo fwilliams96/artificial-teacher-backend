@@ -2,8 +2,8 @@ import re
 import string
 from ai_teacher.activities.listening.application.topic_planner import TopicPlanner
 from ai_teacher.users.user_pronunciations.domain.user_pronunciation import SentenceWord, Sentence, UserPronunciation
-from ai_teacher.users.user_pronunciations.infrastructure.mongo_user_pronunciation_repository import MongoUserPronunciationRepository
 from ai_teacher.users.user_pronunciations.infrastructure.openai.chatgpt_sentence_generator import ChatgptSentenceGenerator
+from ai_teacher.users.user_pronunciations.infrastructure.persistence.mongo_user_pronunciation_repository import MongoUserPronunciationRepository
 from shared.application.text_to_speech_transformer import TextToSpeechTransformer
 
 class UserPronunciationGenerator:

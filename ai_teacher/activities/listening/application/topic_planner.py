@@ -12,3 +12,7 @@ class TopicPlanner:
         user_preferences = self.user_preference_finder.get_preferences(user_id)
         random_preference = random.choice(user_preferences)
         return self.preference_finder.find(random_preference.preference_id).preference
+
+    def get_all_topics(self, user_id: str) -> list[str]:
+        user_preferences = self.user_preference_finder.get_preferences(user_id)
+        return [self.preference_finder.find(user_preference.preference_id).preference for user_preference in user_preferences]
