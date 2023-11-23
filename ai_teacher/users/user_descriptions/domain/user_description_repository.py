@@ -17,5 +17,5 @@ class UserDescriptionRepository(abc.ABC):
         pass
 
     @abc.abstractclassmethod
-    def find_by_routine_id(self, user_routine_id: str) -> Optional[UserDescription]:
+    def find_by_routine_id(self, user_routine_id: str) -> list[UserDescription]:
         pass

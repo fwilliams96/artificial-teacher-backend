@@ -16,5 +16,5 @@ class UserDescriptionRater:
         user_description = user_solution.content
         if user_solution.type == UserSolutionType.SPEECH:
             user_description = self.speech_to_text_transcriber.transcribe(user_solution.content)
-            print(user_description)
+            #print(user_description)
         return self.external_description_rater.rate(user_description, image)
